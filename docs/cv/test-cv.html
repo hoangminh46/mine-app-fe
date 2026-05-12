@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hoang Cong Minh - Frontend Developer</title>
+  <style>
+    /* ========================================
+       ATS-FRIENDLY CV TEMPLATE v2
+       ─ Single column, strictly
+       ─ System fonts only (no external deps)
+       ─ Compact to fit 1 page A4
+       ─ Tested for print-to-PDF
+       ======================================== */
+
+    :root {
+      --color-primary: #1B2A4A;
+      --color-accent: #2B5797;
+      --color-text: #333333;
+      --color-text-light: #666666;
+      --color-line: #2B5797;
+      --color-line-light: #CBD5E1;
+      --color-bg: #ffffff;
+      --font-main: 'Segoe UI', Calibri, Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      font-size: 9pt;
+      color: var(--color-text);
+      background: #e8e8e8;
+      line-height: 1.35;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 10mm auto;
+      padding: 10mm 14mm;
+      background: var(--color-bg);
+      box-shadow: 0 1px 12px rgba(0,0,0,0.12);
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      text-align: center;
+      padding-bottom: 6pt;
+      border-bottom: 2pt solid var(--color-line);
+      margin-bottom: 7pt;
+    }
+
+    .name {
+      font-size: 18pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.5pt;
+      text-transform: uppercase;
+      margin-bottom: 2pt;
+    }
+
+    .headline {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin-bottom: 4pt;
+    }
+
+    .contact {
+      font-size: 8.5pt;
+      color: var(--color-text-light);
+      line-height: 1.6;
+    }
+
+    .contact a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .contact .sep {
+      margin: 0 5pt;
+      color: #bbb;
+    }
+
+    /* ─── SECTION ─── */
+    .section {
+      margin-bottom: 6pt;
+    }
+
+    .section-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.8pt;
+      border-bottom: 1pt solid var(--color-line);
+      padding-bottom: 1pt;
+      margin-bottom: 4pt;
+    }
+
+    /* ─── SUMMARY ─── */
+    .summary {
+      font-size: 8.5pt;
+      line-height: 1.4;
+      color: var(--color-text);
+    }
+
+    /* ─── SKILLS ─── */
+    .skill-row {
+      display: flex;
+      font-size: 8.5pt;
+      line-height: 1.45;
+    }
+
+    .skill-label {
+      width: 120pt;
+      font-weight: 600;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .skill-value {
+      flex: 1;
+    }
+
+    /* ─── ENTRIES (Experience / Projects) ─── */
+    .entry {
+      margin-bottom: 5pt;
+    }
+
+    .entry:last-child {
+      margin-bottom: 0;
+    }
+
+    .entry-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .entry-role {
+      font-size: 9pt;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    .entry-date {
+      font-size: 8.5pt;
+      color: var(--color-text-light);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .entry-company {
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin-bottom: 1pt;
+    }
+
+    .entry-meta {
+      font-size: 8.5pt;
+      color: var(--color-text-light);
+      font-style: italic;
+      margin-bottom: 2pt;
+    }
+
+    .entry-meta a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    ul.bullets {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul.bullets li {
+      font-size: 8.5pt;
+      line-height: 1.4;
+      padding-left: 10pt;
+      position: relative;
+      margin-bottom: 0.5pt;
+    }
+
+    ul.bullets li::before {
+      content: "\2022";
+      position: absolute;
+      left: 0;
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    /* ─── EDUCATION & CERTS (single column) ─── */
+    .row-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 8.5pt;
+    }
+
+    .row-left {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .row-right {
+      color: var(--color-text-light);
+    }
+
+    .row-detail {
+      font-size: 8.5pt;
+      color: var(--color-text-light);
+      padding-left: 10pt;
+      margin-bottom: 2pt;
+    }
+
+    /* ─── PRINT ─── */
+    @media print {
+      body { background: white; }
+
+      .page {
+        box-shadow: none;
+        margin: 0;
+        padding: 10mm 14mm;
+        min-height: auto;
+        width: 100%;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      a { color: var(--color-accent) !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <h1 class="name">Hoang Cong Minh</h1>
+    <div class="headline">Software Engineer (Frontend) &middot; React.js &amp; Next.js &middot; 3 Years Experience</div>
+    <div class="contact">
+      <span>+84 347-547-065</span>
+      <span class="sep">|</span>
+      <a href="mailto:hoangcongminh406@gmail.com">hoangcongminh406@gmail.com</a>
+      <span class="sep">|</span>
+      <span>Ha Noi, Viet Nam</span>
+      <br>
+      <a href="https://github.com/hoangminh46">github.com/hoangminh46</a>
+      <span class="sep">|</span>
+      <a href="https://linkedin.com/in/hoangcongminh">linkedin.com/in/hoangcongminh</a>
+      <span class="sep">|</span>
+      <a href="https://mine-english.vercel.app">mine-english.vercel.app</a>
+    </div>
+  </header>
+
+  <!-- ═══ SUMMARY ═══ -->
+  <section class="section">
+    <h2 class="section-title">Professional Summary</h2>
+    <p class="summary">
+      Software Engineer with 3 years of experience building production-grade web applications
+      using <strong>React.js</strong>, <strong>Next.js</strong>, and <strong>Vue.js</strong>.
+      Delivered 5+ projects across SaaS, enterprise management, and LINE Mini App platforms,
+      serving 50+ corporate clients. Strong focus on front-end architecture with practical back-end
+      capabilities (<strong>Node.js</strong>, <strong>Express.js</strong>, <strong>MongoDB</strong>) to deliver end-to-end features independently.
+      Experienced in proposing and implementing technical improvements that enhanced system performance. TOEIC 785.
+    </p>
+  </section>
+
+  <!-- ═══ SKILLS ═══ -->
+  <section class="section">
+    <h2 class="section-title">Technical Skills</h2>
+    <div class="skill-row">
+      <span class="skill-label">Languages</span>
+      <span class="skill-value">JavaScript (ES6+), TypeScript, HTML5, CSS3/SASS</span>
+    </div>
+    <div class="skill-row">
+      <span class="skill-label">Frameworks</span>
+      <span class="skill-value">React.js, Next.js, Vue.js, Node.js, Express.js</span>
+    </div>
+    <div class="skill-row">
+      <span class="skill-label">State &amp; APIs</span>
+      <span class="skill-value">Redux Toolkit, TanStack Query, Pinia, Vuex, Axios, RESTful APIs</span>
+    </div>
+    <div class="skill-row">
+      <span class="skill-label">Styling</span>
+      <span class="skill-value">Tailwind CSS, SASS, Bootstrap</span>
+    </div>
+    <div class="skill-row">
+      <span class="skill-label">Database</span>
+      <span class="skill-value">MongoDB, MongoDB Atlas</span>
+    </div>
+    <div class="skill-row">
+      <span class="skill-label">Tools</span>
+      <span class="skill-value">Git, Cursor, Postman, Figma, Backlog, Lark</span>
+    </div>
+  </section>
+
+  <!-- ═══ WORK EXPERIENCE ═══ -->
+  <section class="section">
+    <h2 class="section-title">Work Experience</h2>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Front-End Developer</span>
+        <span class="entry-date">Apr 2024 &ndash; Present</span>
+      </div>
+      <div class="entry-company">AMELA Technology JSC &mdash; Ha Noi, Viet Nam</div>
+      <ul class="bullets">
+        <li>Developed and maintained <strong>3+ web applications</strong> using Next.js, React.js, and Vue.js for enterprise clients, contributing to a cross-functional Agile/Scrum team.</li>
+        <li>Architected a <strong>role-based access control (RBAC) system</strong> for an internal platform, enabling granular permission management across multiple departments.</li>
+        <li>Implemented interactive workflow diagrams using <strong>ReactFlow</strong>, enabling visual mapping of departmental processes and team structures.</li>
+        <li>Proposed and applied <strong>technical improvements</strong> including code refactoring, component optimization, and Rich Text Editor integration.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Front-End Developer</span>
+        <span class="entry-date">Jun 2023 &ndash; Dec 2023</span>
+      </div>
+      <div class="entry-company">An Bien Software Company &mdash; Absoltech</div>
+      <ul class="bullets">
+        <li>Communicated directly with clients to translate <strong>UI/UX requirements</strong> into technical specs and provided suggestions for interface design.</li>
+        <li>Developed and maintained front-end features using <strong>Vue.js</strong>, ensuring cross-browser compatibility across Chrome, Firefox, Safari, and Edge.</li>
+        <li>Collaborated with backend developers to integrate <strong>API endpoints</strong> using Axios, ensuring smooth data flow and error handling.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <section class="section">
+    <h2 class="section-title">Projects</h2>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">AI Automation chatbot Platform</span>
+        <span class="entry-date">Apr 2026 &ndash; Present</span>
+      </div>
+      <div class="entry-meta">Next.js, TypeScript, Tailwind CSS, Zustand, NestJS, Prisma, PostgreSQL, Socket.IO</div>
+      <ul class="bullets">
+        <li>Built a <strong>multi-tenant AI chatbot SaaS platform</strong> for businesses to manage AI agents, knowledge base, customer conversations, and channel integrations in a unified dashboard.</li>
+        <li>Developed front-end modules for <strong>agent management, knowledge upload/filtering, Facebook/Zalo connection, real-time chat inbox, and subscription/billing flows</strong>.</li>
+        <li>Integrated REST APIs and <strong>WebSocket-based real-time updates</strong> for conversation handling, human takeover, and live dashboard operations.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Video Email SaaS Platform &amp; Outlook Add-in</span>
+        <span class="entry-date">Dec 2024 &ndash; May 2026</span>
+      </div>
+      <div class="entry-meta">Next.js, React.js, TypeScript, Tailwind CSS, Zustand, TanStack Query, Office.js</div>
+      <ul class="bullets">
+        <li>Developed a <strong>B2B SaaS platform</strong> for creating and managing AI avatar video emails, including dashboard modules for authentication, tenant/user/video management, and media registration workflows.</li>
+        <li>Built an <strong>Outlook add-in</strong> integrated with Office.js to extract compose-email content, support AI-based script summarization, and trigger video creation and email sending flows inside Outlook.</li>
+        <li>Contributed to scalable front-end architecture with <strong>RBAC, route guards, service layers, and CSV import/export workflows</strong> across admin and operator features.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Mine &mdash; AI Language Learning App</span>
+        <span class="entry-date">May 2025 &ndash; Present</span>
+      </div>
+      <div class="entry-meta">
+        Next.js, Express.js, TypeScript, MongoDB &bull;
+        <a href="https://mine-english.vercel.app">mine-english.vercel.app</a>
+      </div>
+      <ul class="bullets">
+        <li>Built a <strong>fullstack AI-powered</strong> language learning web app integrating Gemini and OpenAI APIs for dynamically generated, customizable English quizzes.</li>
+        <li>Implemented <strong>PDF export</strong> feature for offline study and created a flexible quiz builder allowing learners to adjust content themes and difficulty levels.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══ EDUCATION & CERTIFICATIONS ═══ -->
+  <section class="section">
+    <h2 class="section-title">Education &amp; Certifications</h2>
+    <div class="row-between">
+      <span class="row-left">Vietnam Maritime University (VMU) &mdash; B.Sc. Information Technology</span>
+      <span class="row-right">2018 &ndash; 2022</span>
+    </div>
+    <div class="row-between" style="margin-top:2pt">
+      <span class="row-left">TOEIC 785</span>
+      <span class="row-right">Dec 2025</span>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
