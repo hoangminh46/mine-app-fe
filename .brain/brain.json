@@ -1,7 +1,7 @@
 {
   "project": "mine-knowledge-base",
-  "description": "Personal knowledge base — fullstack migration from static markdown to Supabase + Google OAuth",
-  "updated_at": "2026-05-22T15:20:00+07:00",
+  "description": "Personal knowledge base — fullstack with Supabase + Google OAuth + Markdown Editor",
+  "updated_at": "2026-05-22T16:00:00+07:00",
   "tech_stack": {
     "framework": "Next.js 16.2.6 (App Router, Turbopack)",
     "language": "TypeScript",
@@ -19,6 +19,7 @@
       "drizzle-orm",
       "postgres",
       "drizzle-kit",
+      "@uiw/react-md-editor",
       "unified", "remark-parse", "remark-rehype",
       "rehype-slug", "rehype-highlight", "rehype-stringify",
       "gray-matter", "fuse.js"
@@ -30,7 +31,7 @@
     "policies": "per-user isolation via auth.uid() = user_id",
     "trigger": "on_auth_user_created → auto-create profile",
     "source_file": "supabase/migrations/001_initial_schema.sql",
-    "last_verified_sha": "06f0fc9"
+    "last_verified_sha": "fa62caa"
   },
   "features": {
     "auth": {
@@ -39,25 +40,61 @@
       "login_page": "src/app/login/page.tsx",
       "callback": "src/app/auth/callback/route.ts",
       "middleware": "src/middleware.ts (session refresh + route protection)",
-      "last_changed_sha": "06f0fc9"
+      "last_changed_sha": "fa62caa"
     },
     "knowledge_reader": {
-      "status": "implemented (static, pre-migration)",
-      "source": "src/lib/knowledge.ts",
-      "note": "Will be replaced by DB queries in Phase 04"
+      "status": "implemented (DB-backed)",
+      "queries": "src/lib/db/queries/articles.ts + folders.ts",
+      "page": "src/app/knowledge/[[...slug]]/page.tsx",
+      "last_changed_sha": "fa62caa"
     },
-    "dashboard": { "status": "implemented (static, pre-migration)" },
-    "search": { "status": "implemented (static, pre-migration)" },
-    "sidebar": { "status": "implemented (static, pre-migration)" },
-    "folder_crud": { "status": "planned (Phase 05)" },
-    "article_crud": { "status": "planned (Phase 06)" },
-    "markdown_editor": { "status": "planned (Phase 06)" }
+    "dashboard": {
+      "status": "implemented (DB-backed)",
+      "page": "src/app/page.tsx",
+      "last_changed_sha": "fa62caa"
+    },
+    "search": {
+      "status": "implemented (DB-backed)",
+      "source": "src/lib/search.ts",
+      "last_changed_sha": "fa62caa"
+    },
+    "sidebar": {
+      "status": "implemented (DB-backed with CRUD)",
+      "source": "src/components/Sidebar.tsx",
+      "last_changed_sha": "fa62caa"
+    },
+    "folder_crud": {
+      "status": "implemented",
+      "actions": "src/lib/actions/folders.ts",
+      "components": ["FolderDialog.tsx", "DeleteConfirmDialog.tsx"],
+      "last_changed_sha": "fa62caa"
+    },
+    "article_crud": {
+      "status": "implemented",
+      "actions": "src/lib/actions/articles.ts",
+      "components": ["ArticleEditor.tsx", "ArticleActions.tsx"],
+      "editor_page": "src/app/knowledge/editor/[[...slug]]/page.tsx",
+      "last_changed_sha": "fa62caa"
+    },
+    "markdown_editor": {
+      "status": "implemented",
+      "library": "@uiw/react-md-editor",
+      "features": ["split-pane", "live preview", "metadata form", "dark theme"],
+      "last_changed_sha": "fa62caa"
+    },
+    "onboarding": {
+      "status": "implemented",
+      "seed": "src/lib/db/seed.ts",
+      "trigger": "Auth callback on first login",
+      "last_changed_sha": "fa62caa"
+    }
   },
   "coding_rules": {
     "commenting": "Only comment WHY, not WHAT",
     "naming": "Self-documenting, camelCase for vars/funcs",
     "css": "Vanilla CSS with BEM-like classes, design tokens via CSS custom properties",
-    "no_placeholders": "Code must be complete and runnable"
+    "no_placeholders": "Code must be complete and runnable",
+    "react19": "No setState in useEffect body — use conditional rendering + key for reset"
   },
   "supabase": {
     "project_name": "mine-knowledge-base",

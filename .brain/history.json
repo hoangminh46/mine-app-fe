@@ -38,15 +38,57 @@
         "Next.js middleware for session refresh (deprecated but still working in 16.2)"
       ],
       "next_steps": [
-        "Test login flow end-to-end (Google consent → redirect → navbar avatar)",
-        "Phase 04: Data Layer Migration — replace knowledge.ts with DB queries",
-        "Phase 05: Folder CRUD",
-        "Phase 06: Article CRUD + Markdown Editor",
-        "Phase 07: Dashboard + Search + Onboarding + Polish"
+        "Phase 04-07: Complete fullstack migration"
       ],
       "open_questions": [
         "Next.js 16 deprecates middleware → proxy. May need to migrate naming later.",
         "Supabase free tier DB pauses after 1 week inactive — consider cron ping for production"
+      ]
+    },
+    {
+      "id": "handoff-20260522-160000",
+      "saved_at": "2026-05-22T16:00:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "fa62caa0671cd6f6d4f9308185a38794ef6ea762",
+      "base_sha": "1388541a2715fddc9b4e27251bf416d001c93e62",
+      "source": "commit",
+      "commit_range": "1388541..fa62caa",
+      "summary": "🎉 Fullstack migration COMPLETE — Phase 04-07: Data layer → Folder CRUD → Article CRUD + Editor → Dashboard polish + Onboarding",
+      "project_changes": [
+        "Phase 04: Extracted markdown.ts (pure functions), created DB queries (folders.ts, articles.ts), migrated all pages to Supabase, deleted knowledge.ts + docs/knowledge/",
+        "Phase 05: Folder CRUD — createFolder/renameFolder/deleteFolder server actions, FolderDialog (create/rename), DeleteConfirmDialog, sidebar hover actions",
+        "Phase 06: Article CRUD — createArticle/updateArticle/deleteArticle server actions, ArticleEditor with @uiw/react-md-editor split-pane, editor page, ArticleActions (edit/delete), Vietnamese slug generator",
+        "Phase 07: Demo data seeder (Getting Started folder + 2 articles), seed on first login, empty states (dashboard, folder, sidebar, knowledge page), dashboard CTA button",
+        "Fixed React 19 cascading setState error in FolderDialog (removed useEffect, use conditional rendering)",
+        "Fixed Supabase foreign key join type error (query folder slug separately)",
+        "Added shared UI types (src/lib/types.ts) to decouple components from data layer"
+      ],
+      "commits": [
+        "1388541 chore: save brain + migration plan (Phase 01-03 complete)",
+        "fa62caa feat: Phase 04-07 — Data layer migration, Folder/Article CRUD, Editor, Dashboard polish"
+      ],
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+      "decisions": [
+        "@uiw/react-md-editor for markdown editing (split-pane, dark theme, live preview)",
+        "Server actions for CRUD (not API routes) — simpler, type-safe",
+        "Vietnamese slug generator with NFD normalization + đ/Đ handling",
+        "Conditional rendering for dialogs (not isOpen prop) to avoid React 19 setState-in-effect error",
+        "Separate folder slug query instead of Supabase foreign key join (type compatibility)",
+        "Non-blocking seed in auth callback (catch errors silently)",
+        "revalidatePath('/', 'layout') for full sidebar refresh after mutations"
+      ],
+      "next_steps": [
+        "Test full CRUD flow: login → see demo data → create folder → create article → edit → delete",
+        "Deploy to Vercel when ready",
+        "Consider: image upload, article export, mobile responsive polish"
+      ],
+      "open_questions": [
+        "Next.js 16 middleware → proxy deprecation warning (still works, future migration needed)",
+        "Supabase free tier DB pauses after 1 week inactive",
+        "Lockfile swc patching warning on build (cosmetic, doesn't affect output)"
       ]
     }
   ]

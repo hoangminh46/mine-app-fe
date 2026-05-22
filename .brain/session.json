@@ -1,40 +1,35 @@
 {
-  "updated_at": "2026-05-22T15:20:00+07:00",
+  "updated_at": "2026-05-22T16:00:00+07:00",
   "current_branch": "feat/add-test",
-  "active_handoff_id": "handoff-20260522-152000",
+  "active_handoff_id": "handoff-20260522-160000",
   "working_on": {
     "feature": "fullstack-migration",
     "current_plan_path": "plans/260522-1403-fullstack-migration",
-    "current_phase": "phase-03",
-    "task": "Phase 03 complete — Auth UI + Protected Routes",
-    "status": "phase-03-complete"
+    "current_phase": "complete",
+    "task": "All 7 phases complete — fullstack migration done",
+    "status": "migration-complete"
   },
   "git_snapshot": {
-    "head_sha": "06f0fc9a199e2d8b2b1b2721f8a80418731ae8ba",
-    "last_saved_head_sha": "089f72caaa00164e2dae18f606707e026228d5d0",
-    "base_sha": "089f72caaa00164e2dae18f606707e026228d5d0",
+    "head_sha": "fa62caa0671cd6f6d4f9308185a38794ef6ea762",
+    "last_saved_head_sha": "1388541a2715fddc9b4e27251bf416d001c93e62",
+    "base_sha": "1388541a2715fddc9b4e27251bf416d001c93e62",
     "branch": "feat/add-test",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "089f72c..06f0fc9",
+    "commit_range": "1388541..fa62caa",
     "commits_since_last_save": [
-      "06f0fc9 feat: Phase 01 - Supabase setup + auth foundation"
+      "fa62caa feat: Phase 04-07 — Data layer migration, Folder/Article CRUD, Editor, Dashboard polish"
     ]
   },
-  "pending_tasks": [
-    "Phase 04: Data Layer Migration — replace filesystem with DB queries",
-    "Phase 05: Folder CRUD",
-    "Phase 06: Article CRUD + Markdown Editor",
-    "Phase 07: Dashboard + Search + Onboarding + Polish"
-  ],
+  "pending_tasks": [],
   "recent_changes": [
-    "Phase 01: Installed Supabase + Drizzle deps, created client utilities, middleware, auth helper",
-    "Phase 02: Created DB schema (profiles, folders, articles), RLS policies, auto-profile trigger",
-    "Phase 03: Created login page, OAuth callback, updated Navbar with avatar/logout, route protection",
-    "Cleanup: Removed old plan folder, verify scripts"
+    "Phase 04: Extracted markdown.ts, created DB queries (folders.ts, articles.ts), updated all pages to use Supabase, deleted knowledge.ts + docs/knowledge/",
+    "Phase 05: Folder CRUD — server actions, FolderDialog, DeleteConfirmDialog, sidebar actions",
+    "Phase 06: Article CRUD — server actions, ArticleEditor with @uiw/react-md-editor, editor page, ArticleActions, slug utility",
+    "Phase 07: Demo data seeder, seed on first login, empty states, dashboard CTA"
   ],
   "uncommitted_summary": {
     "status": "clean",
