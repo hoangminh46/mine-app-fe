@@ -2,14 +2,20 @@
 
 import ThemeToggle from "./ThemeToggle";
 import Link from "next/link";
+import Image from "next/image";
+import { signOut } from "@/lib/actions/auth";
 
 interface NavbarProps {
   onSearchOpen?: () => void;
   onSidebarToggle?: () => void;
   sidebarOpen?: boolean;
+  user?: {
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
 }
 
-export default function Navbar({ onSearchOpen, onSidebarToggle, sidebarOpen }: NavbarProps) {
+export default function Navbar({ onSearchOpen, onSidebarToggle, sidebarOpen, user }: NavbarProps) {
   return (
     <nav
       className="glass-panel navbar"
@@ -100,6 +106,49 @@ export default function Navbar({ onSearchOpen, onSidebarToggle, sidebarOpen }: N
         </button>
 
         <ThemeToggle />
+
+        {/* User menu */}
+        {user && (
+          <div className="navbar-user">
+            <div className="navbar-avatar">
+              {user.avatarUrl ? (
+                <Image
+                  src={user.avatarUrl}
+                  alt={user.displayName || "Avatar"}
+                  width={32}
+                  height={32}
+                  className="navbar-avatar-img"
+                />
+              ) : (
+                <div className="navbar-avatar-fallback">
+                  {(user.displayName || "U").charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="navbar-logout-btn"
+                title="Đăng xuất"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </nav>
   );

@@ -8,9 +8,13 @@ import type { SearchItem } from "@/lib/search";
 interface AppShellProps {
   searchIndex: SearchItem[];
   children: React.ReactNode;
+  user?: {
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
 }
 
-export default function AppShell({ searchIndex, children }: AppShellProps) {
+export default function AppShell({ searchIndex, children, user }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSearchOpen = () => {
@@ -57,6 +61,7 @@ export default function AppShell({ searchIndex, children }: AppShellProps) {
         onSearchOpen={handleSearchOpen}
         onSidebarToggle={handleSidebarToggle}
         sidebarOpen={sidebarOpen}
+        user={user}
       />
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
