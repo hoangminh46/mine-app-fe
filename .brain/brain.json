@@ -1,0 +1,67 @@
+{
+  "project": "mine-knowledge-base",
+  "description": "Personal knowledge base — fullstack migration from static markdown to Supabase + Google OAuth",
+  "updated_at": "2026-05-22T15:20:00+07:00",
+  "tech_stack": {
+    "framework": "Next.js 16.2.6 (App Router, Turbopack)",
+    "language": "TypeScript",
+    "runtime": "Node.js 24",
+    "ui": "React 19",
+    "styling": "Vanilla CSS (Liquid Glass design system) + Tailwind (minimal)",
+    "database": "Supabase PostgreSQL (free tier)",
+    "orm": "Drizzle ORM + postgres driver",
+    "auth": "Supabase Auth (Google OAuth2)",
+    "deployment_target": "Vercel (free hobby tier)",
+    "package_manager": "npm",
+    "dependencies_key": [
+      "@supabase/supabase-js",
+      "@supabase/ssr",
+      "drizzle-orm",
+      "postgres",
+      "drizzle-kit",
+      "unified", "remark-parse", "remark-rehype",
+      "rehype-slug", "rehype-highlight", "rehype-stringify",
+      "gray-matter", "fuse.js"
+    ]
+  },
+  "database_schema": {
+    "tables": ["profiles", "folders", "articles"],
+    "rls_enabled": true,
+    "policies": "per-user isolation via auth.uid() = user_id",
+    "trigger": "on_auth_user_created → auto-create profile",
+    "source_file": "supabase/migrations/001_initial_schema.sql",
+    "last_verified_sha": "06f0fc9"
+  },
+  "features": {
+    "auth": {
+      "status": "implemented",
+      "provider": "Google OAuth2 via Supabase",
+      "login_page": "src/app/login/page.tsx",
+      "callback": "src/app/auth/callback/route.ts",
+      "middleware": "src/middleware.ts (session refresh + route protection)",
+      "last_changed_sha": "06f0fc9"
+    },
+    "knowledge_reader": {
+      "status": "implemented (static, pre-migration)",
+      "source": "src/lib/knowledge.ts",
+      "note": "Will be replaced by DB queries in Phase 04"
+    },
+    "dashboard": { "status": "implemented (static, pre-migration)" },
+    "search": { "status": "implemented (static, pre-migration)" },
+    "sidebar": { "status": "implemented (static, pre-migration)" },
+    "folder_crud": { "status": "planned (Phase 05)" },
+    "article_crud": { "status": "planned (Phase 06)" },
+    "markdown_editor": { "status": "planned (Phase 06)" }
+  },
+  "coding_rules": {
+    "commenting": "Only comment WHY, not WHAT",
+    "naming": "Self-documenting, camelCase for vars/funcs",
+    "css": "Vanilla CSS with BEM-like classes, design tokens via CSS custom properties",
+    "no_placeholders": "Code must be complete and runnable"
+  },
+  "supabase": {
+    "project_name": "mine-knowledge-base",
+    "region": "ap-northeast-1 (Tokyo)",
+    "project_ref": "dxfxvbcpfgnemrvejsol"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "entries": [
+    {
+      "id": "handoff-20260522-152000",
+      "saved_at": "2026-05-22T15:20:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "06f0fc9a199e2d8b2b1b2721f8a80418731ae8ba",
+      "base_sha": "089f72caaa00164e2dae18f606707e026228d5d0",
+      "source": "commit",
+      "commit_range": "089f72c..06f0fc9",
+      "summary": "Fullstack migration Phase 01-03 complete: Supabase setup, DB schema, Auth UI",
+      "project_changes": [
+        "Installed Supabase + Drizzle ORM dependencies",
+        "Created Supabase client utilities (server, browser, middleware)",
+        "Created DB schema: profiles, folders, articles with RLS + trigger",
+        "Created login page with Google OAuth sign-in",
+        "Created auth callback route handler",
+        "Updated Navbar with user avatar + logout",
+        "Updated layout to fetch user profile",
+        "Added Google avatar domain to next.config",
+        "Added login + navbar user CSS styles",
+        "Removed old static knowledge base plan folder"
+      ],
+      "commits": [
+        "06f0fc9 feat: Phase 01 - Supabase setup + auth foundation"
+      ],
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+      "decisions": [
+        "Supabase All-in-One (Auth + DB + RLS) for simplicity",
+        "Drizzle ORM with postgres driver (PgBouncer compatible)",
+        "Google OAuth only (no email/password)",
+        "Hard delete + confirmation dialog (no soft delete)",
+        "Slug auto-generated from title",
+        "Per-user data isolation via RLS policies",
+        "Next.js middleware for session refresh (deprecated but still working in 16.2)"
+      ],
+      "next_steps": [
+        "Test login flow end-to-end (Google consent → redirect → navbar avatar)",
+        "Phase 04: Data Layer Migration — replace knowledge.ts with DB queries",
+        "Phase 05: Folder CRUD",
+        "Phase 06: Article CRUD + Markdown Editor",
+        "Phase 07: Dashboard + Search + Onboarding + Polish"
+      ],
+      "open_questions": [
+        "Next.js 16 deprecates middleware → proxy. May need to migrate naming later.",
+        "Supabase free tier DB pauses after 1 week inactive — consider cron ping for production"
+      ]
+    }
+  ]
+}
