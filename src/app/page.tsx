@@ -1,65 +1,110 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getAllArticles } from "@/lib/knowledge";
 
-export default function Home() {
+export default async function DashboardPage() {
+  const articles = await getAllArticles();
+
+  // Stats
+  const total = articles.length;
+  const learningCount = articles.filter((a) => a.frontmatter.status === "learning").length;
+  const reviewedCount = articles.filter((a) => a.frontmatter.status === "reviewed").length;
+  const masteredCount = articles.filter((a) => a.frontmatter.status === "mastered").length;
+
+  // Recent articles sorted by updated date
+  const recentArticles = [...articles]
+    .sort((a, b) => {
+      const dateA = a.frontmatter.updated || a.frontmatter.created || "";
+      const dateB = b.frontmatter.updated || b.frontmatter.created || "";
+      return new Date(String(dateB)).getTime() - new Date(String(dateA)).getTime();
+    })
+    .slice(0, 5);
+
+  const stats = [
+    { label: "Total Articles", count: total, emoji: "📚", className: "stat-total" },
+    { label: "Learning", count: learningCount, emoji: "📖", className: "stat-learning" },
+    { label: "Reviewed", count: reviewedCount, emoji: "🔍", className: "stat-reviewed" },
+    { label: "Mastered", count: masteredCount, emoji: "✅", className: "stat-mastered" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="dashboard">
+      {/* Hero Section */}
+      <section className="dashboard-hero">
+        <h1 className="dashboard-title gradient-text">
+          Mine Knowledge Base
+        </h1>
+        <p className="dashboard-subtitle">
+          Lưu trữ, tổ chức và học tập kiến thức hiệu quả
+        </p>
+        <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
+          Nhấn{" "}
+          <kbd className="dashboard-kbd">Ctrl K</kbd>{" "}
+          để tìm kiếm nhanh
+        </p>
+      </section>
+
+      {/* Stats Cards */}
+      <section className="dashboard-stats">
+        {stats.map((stat) => (
+          <div key={stat.label} className={`glass-panel dashboard-stat-card ${stat.className}`}>
+            <div className="stat-emoji">{stat.emoji}</div>
+            <div className="stat-count">{stat.count}</div>
+            <div className="stat-label">{stat.label}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* Recent Articles */}
+      <section className="dashboard-section">
+        <h2 className="dashboard-section-title">📝 Recent Articles</h2>
+        {recentArticles.length > 0 ? (
+          <div className="dashboard-recent">
+            {recentArticles.map((article) => {
+              const category = article.slug.split("/")[0] || "";
+              const categoryLabel = category
+                .split("-")
+                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(" ");
+
+              return (
+                <Link
+                  key={article.slug}
+                  href={`/knowledge/${article.slug}`}
+                  className="glass-panel dashboard-article-item"
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="article-item-title">{article.frontmatter.title}</div>
+                    <div className="article-item-meta">
+                      <span className="article-item-category">{categoryLabel}</span>
+                      <span>·</span>
+                      <span>{article.readingTime} min read</span>
+                    </div>
+                  </div>
+                  <span className={`glass-pill status-${article.frontmatter.status}`} style={{ flexShrink: 0 }}>
+                    {article.frontmatter.status}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="dashboard-empty">
+            <div style={{ fontSize: "2rem" }}>📭</div>
+            <p>Chưa có bài viết nào</p>
+          </div>
+        )}
+      </section>
+
+      {/* Quick Start */}
+      <section className="dashboard-section">
+        <h2 className="dashboard-section-title">🚀 Quick Start</h2>
+        <div className="dashboard-quick-start glass-panel">
+          <p>
+            Thêm file <code>.md</code> vào thư mục <code>docs/knowledge/</code> để bắt đầu.
+            Tạo thư mục con để phân loại theo chủ đề.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }
