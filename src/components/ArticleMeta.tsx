@@ -1,4 +1,4 @@
-import type { ArticleFrontmatter } from "@/lib/knowledge";
+import type { ArticleFrontmatter } from "@/lib/types";
 
 interface ArticleMetaProps {
   frontmatter: ArticleFrontmatter;

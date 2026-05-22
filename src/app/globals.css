@@ -1583,7 +1583,468 @@ small {
 }
 
 /* ──────────────────────────────────────────────
-   27. TAILWIND THEME OVERRIDES
+   27. DIALOG SYSTEM
+   ────────────────────────────────────────────── */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.dialog-content {
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  animation: dialog-in 200ms ease;
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.dialog-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.dialog-message {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.dialog-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.dialog-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.dialog-error {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #ef4444;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.dialog-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dialog-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dialog-btn-cancel {
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+}
+
+.dialog-btn-cancel:hover:not(:disabled) {
+  background: var(--glass-bg-hover);
+}
+
+.dialog-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.dialog-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.dialog-btn-danger {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.dialog-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* ──────────────────────────────────────────────
+   28. SIDEBAR CRUD
+   ────────────────────────────────────────────── */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem 0.75rem;
+}
+
+.sidebar-header-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.sidebar-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.375rem;
+  background: var(--glass-bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-add-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.sidebar-folder-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.sidebar-folder-row:hover .sidebar-folder-actions {
+  opacity: 1;
+}
+
+.sidebar-folder-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 1rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+  min-width: 0;
+}
+
+.sidebar-folder-btn:hover {
+  background: var(--glass-bg-hover) !important;
+}
+
+.sidebar-folder-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-folder-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  padding-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.sidebar-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.6875rem;
+  border-radius: 0.25rem;
+  transition: background 0.15s ease;
+}
+
+.sidebar-action-btn:hover {
+  background: var(--glass-bg-hover);
+}
+
+.sidebar-create-hint {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  border: 1px dashed var(--accent-primary);
+  border-radius: 0.375rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-create-hint:hover {
+  background: var(--glass-bg);
+}
+
+/* ──────────────────────────────────────────────
+   29. EDITOR PAGE
+   ────────────────────────────────────────────── */
+.editor-page {
+  padding: 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.editor-back-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.editor-back-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+
+.editor-page-title {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.editor-save-btn {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--accent-primary);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editor-save-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.editor-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-error {
+  padding: 0.625rem 0.875rem;
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0.5rem;
+}
+
+.editor-title-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.625rem;
+  color: var(--text-primary);
+  outline: none;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.2s ease;
+}
+
+.editor-title-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.editor-title-input::placeholder {
+  color: var(--text-muted);
+}
+
+.editor-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.editor-select,
+.editor-tags-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.editor-select:focus,
+.editor-tags-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.editor-tags-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.editor-tags-input::placeholder {
+  color: var(--text-muted);
+}
+
+.editor-select option {
+  background: var(--bg-surface);
+}
+
+.editor-container {
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+/* Override md-editor dark theme */
+.editor-container .w-md-editor {
+  background: var(--bg-surface) !important;
+  border: none !important;
+}
+
+.editor-container .w-md-editor-toolbar {
+  background: var(--glass-bg) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.editor-container .w-md-editor-content {
+  background: var(--bg-surface) !important;
+}
+
+.editor-container .wmde-markdown {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ──────────────────────────────────────────────
+   30. ARTICLE ACTIONS
+   ────────────────────────────────────────────── */
+.article-actions {
+  display: flex;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.article-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  background: var(--glass-bg);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.article-action-btn:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+}
+
+.article-action-danger:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ──────────────────────────────────────────────
+   31. DASHBOARD CTA & EMPTY STATES
+   ────────────────────────────────────────────── */
+.dashboard-cta-btn {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: var(--accent-primary);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.dashboard-cta-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.folder-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+/* ──────────────────────────────────────────────
+   32. TAILWIND THEME OVERRIDES
    ────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--bg-base);

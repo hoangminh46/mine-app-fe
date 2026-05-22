@@ -1,17 +1,18 @@
-import { getKnowledgeTree } from "@/lib/knowledge";
+import { getFolderTree, getRootArticles } from "@/lib/db/queries/folders";
 import Sidebar from "@/components/Sidebar";
 
-export default function KnowledgeLayout({
+export default async function KnowledgeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const tree = getKnowledgeTree();
+  const folderTree = await getFolderTree();
+  const rootArticles = await getRootArticles();
 
   return (
     <div style={{ display: "flex", minHeight: "calc(100vh - var(--navbar-height))" }}>
       {/* Sidebar */}
-      <Sidebar tree={tree} />
+      <Sidebar folders={folderTree} rootArticles={rootArticles} />
 
       {/* Main + TOC area — children handles its own TOC column */}
       <div

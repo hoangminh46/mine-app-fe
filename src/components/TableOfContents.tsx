@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Heading } from "@/lib/knowledge";
+import type { Heading } from "@/lib/markdown";
 
 interface TableOfContentsProps {
   headings: Heading[];

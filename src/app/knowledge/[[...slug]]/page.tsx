@@ -1,61 +1,43 @@
 import { notFound } from "next/navigation";
-import { getArticle, getAllArticles, getArticlesByFolder, isFolder } from "@/lib/knowledge";
+import { getArticleBySlug } from "@/lib/db/queries/articles";
+import { getArticlesByFolder } from "@/lib/db/queries/articles";
+import { getFolderBySlug } from "@/lib/db/queries/folders";
 import Breadcrumb from "@/components/Breadcrumb";
 import ArticleMeta from "@/components/ArticleMeta";
 import MarkdownContent from "@/components/MarkdownContent";
 import ProgressBar from "@/components/ProgressBar";
 import TableOfContents from "@/components/TableOfContents";
 import FolderListing from "@/components/FolderListing";
+import ArticleActions from "@/components/ArticleActions";
 
 interface ArticlePageProps {
   params: Promise<{ slug?: string[] }>;
-}
-
-export async function generateStaticParams() {
-  const articles = await getAllArticles();
-
-  // Generate params for each article
-  const articleParams = articles.map((article) => ({
-    slug: article.slug.split("/"),
-  }));
-
-  // Generate params for each unique folder
-  const folderSlugs = new Set<string>();
-  articles.forEach((article) => {
-    const parts = article.slug.split("/");
-    // Build folder paths: e.g. "ai/sub" -> ["ai", "ai/sub"]
-    for (let i = 1; i < parts.length; i++) {
-      folderSlugs.add(parts.slice(0, i).join("/"));
-    }
-  });
-
-  const folderParams = Array.from(folderSlugs).map((slug) => ({
-    slug: slug.split("/"),
-  }));
-
-  return [...articleParams, ...folderParams];
 }
 
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
   if (!slug || slug.length === 0) return { title: "Knowledge Base" };
 
-  // Check if folder
-  if (isFolder(slug)) {
-    const folderName = slug[slug.length - 1]
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-    return { title: `${folderName} — Mine KB` };
+  // Last segment could be folder or article slug
+  const articleSlug = slug[slug.length - 1];
+  const folderSlug = slug.join("/");
+
+  // Try folder first
+  const folder = await getFolderBySlug(folderSlug);
+  if (folder) {
+    return { title: `${folder.name} — Mine KB` };
   }
 
-  const article = await getArticle(slug);
-  if (!article) return { title: "Not Found" };
+  // Try article
+  const article = await getArticleBySlug(articleSlug);
+  if (article) {
+    return {
+      title: `${article.title} — Mine KB`,
+      description: article.excerpt,
+    };
+  }
 
-  return {
-    title: `${article.frontmatter.title} — Mine KB`,
-    description: article.excerpt,
-  };
+  return { title: "Not Found" };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -87,27 +69,44 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     );
   }
 
-  // Folder detection — show folder listing
-  if (isFolder(slug)) {
-    const folderSlug = slug.join("/");
-    const articles = await getArticlesByFolder(folderSlug);
-    const folderName = slug[slug.length - 1];
+  // Check if slug matches a folder (e.g. /knowledge/javascript)
+  const folderSlug = slug.join("/");
+  const folder = await getFolderBySlug(folderSlug);
 
+  if (folder) {
+    const articles = await getArticlesByFolder(folder.id);
     return (
       <div className="article-layout">
         <div className="article-content">
           <div style={{ marginBottom: "1.5rem" }}>
             <Breadcrumb slugParts={slug} />
           </div>
-          <FolderListing folderName={folderName} articles={articles} />
+          <FolderListing
+            folderName={folder.name}
+            articles={articles.map((a) => ({
+              frontmatter: {
+                title: a.title,
+                tags: a.tags,
+                order: 0,
+                status: a.status as "learning" | "reviewed" | "mastered",
+                difficulty: a.difficulty as "beginner" | "intermediate" | "advanced",
+                created: a.createdAt,
+                updated: a.updatedAt,
+              },
+              slug: `${folderSlug}/${a.slug}`,
+              readingTime: a.readingTime,
+              excerpt: a.excerpt,
+            }))}
+          />
         </div>
         <div className="article-toc" />
       </div>
     );
   }
 
-  // Article rendering
-  const article = await getArticle(slug);
+  // Article rendering — try the last segment as article slug
+  const articleSlug = slug[slug.length - 1];
+  const article = await getArticleBySlug(articleSlug);
 
   if (!article) {
     notFound();
@@ -118,11 +117,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <ProgressBar />
 
       <div className="article-content">
-        <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
           <Breadcrumb slugParts={slug} />
+          <ArticleActions articleId={article.id} articleSlug={article.slug} />
         </div>
         <ArticleMeta
-          frontmatter={article.frontmatter}
+          frontmatter={{
+            title: article.title,
+            tags: article.tags,
+            order: 0,
+            status: article.status as "learning" | "reviewed" | "mastered",
+            difficulty: article.difficulty as "beginner" | "intermediate" | "advanced",
+            created: article.createdAt,
+            updated: article.updatedAt,
+          }}
           readingTime={article.readingTime}
         />
         <MarkdownContent htmlContent={article.htmlContent} />

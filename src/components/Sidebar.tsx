@@ -1,44 +1,79 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import type { KnowledgeNode } from "@/lib/knowledge";
+import type { SidebarFolder, SidebarArticle } from "@/lib/db/queries/folders";
+import { deleteFolder, getFolderArticleCount, renameFolder } from "@/lib/actions/folders";
+import FolderDialog from "./FolderDialog";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
+
+const STATUS_COLORS: Record<string, string> = {
+  learning: "var(--status-learning)",
+  reviewed: "var(--status-reviewed)",
+  mastered: "var(--status-mastered)",
+};
 
 interface SidebarProps {
-  tree: KnowledgeNode[];
+  folders: SidebarFolder[];
+  rootArticles: SidebarArticle[];
 }
 
-export default function Sidebar({ tree }: SidebarProps) {
+export default function Sidebar({ folders, rootArticles }: SidebarProps) {
+  const isEmpty = folders.length === 0 && rootArticles.length === 0;
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   return (
     <aside
       className="glass-panel sidebar"
       role="navigation"
       aria-label="Knowledge sidebar"
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: "0 1rem 0.75rem",
-          fontSize: "0.6875rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          color: "var(--text-muted)",
-        }}
-      >
-        Knowledge Base
+      {/* Header with action buttons */}
+      <div className="sidebar-header">
+        <span className="sidebar-header-label">Knowledge Base</span>
+        <div style={{ display: "flex", gap: "4px" }}>
+          <Link
+            href="/knowledge/editor"
+            className="sidebar-add-btn"
+            title="Bài viết mới"
+          >
+            📝
+          </Link>
+          <button
+            className="sidebar-add-btn"
+            onClick={() => setShowCreateDialog(true)}
+            title="Tạo folder mới"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Tree */}
       <nav>
-        {tree.map((node) => (
-          <TreeNode key={node.slug} node={node} depth={0} />
+        {folders.map((folder) => (
+          <FolderNode key={folder.id} folder={folder} depth={0} />
+        ))}
+        {rootArticles.map((article) => (
+          <ArticleNode key={article.id} article={article} depth={0} />
         ))}
       </nav>
 
       {/* Empty state */}
-      {tree.length === 0 && (
+      {isEmpty && (
         <div
           style={{
             padding: "2rem 1rem",
@@ -47,64 +82,70 @@ export default function Sidebar({ tree }: SidebarProps) {
             fontSize: "0.8125rem",
           }}
         >
-          Chưa có bài viết nào
+          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📂</div>
+          <p>Chưa có folder nào</p>
+          <button
+            className="sidebar-create-hint"
+            onClick={() => setShowCreateDialog(true)}
+          >
+            + Tạo folder đầu tiên
+          </button>
         </div>
+      )}
+
+      {showCreateDialog && (
+        <FolderDialog
+          mode="create"
+          isOpen={showCreateDialog}
+          onClose={() => setShowCreateDialog(false)}
+        />
       )}
     </aside>
   );
 }
 
 // ──────────────────────────────────────────────
-// TreeNode — Recursive tree item
+// FolderNode — Recursive folder item with actions
 // ──────────────────────────────────────────────
 
-const STATUS_COLORS: Record<string, string> = {
-  learning: "var(--status-learning)",
-  reviewed: "var(--status-reviewed)",
-  mastered: "var(--status-mastered)",
-};
-
-interface TreeNodeProps {
-  node: KnowledgeNode;
+interface FolderNodeProps {
+  folder: SidebarFolder;
   depth: number;
 }
 
-function TreeNode({ node, depth }: TreeNodeProps) {
+function FolderNode({ folder, depth }: FolderNodeProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [articleCount, setArticleCount] = useState<number | null>(null);
 
-  const isFolder = node.type === "folder";
-  const articlePath = `/knowledge/${node.slug}`;
-  const isActive = pathname === articlePath;
+  const hasActiveChild = pathname?.includes(`/knowledge/`) &&
+    (folder.articles.some((a) => pathname === `/knowledge/${folder.slug}/${a.slug}`) ||
+     folder.children.some((c) => pathname?.startsWith(`/knowledge/${c.slug}/`)));
 
-  // Check if any child is active (for folder highlight)
-  const hasActiveChild = isFolder && pathname?.startsWith(`/knowledge/${node.slug}/`);
+  async function handleDeleteClick() {
+    const count = await getFolderArticleCount(folder.id);
+    setArticleCount(count);
+    setShowDeleteDialog(true);
+  }
 
-  if (isFolder) {
-    return (
-      <div>
+  async function handleDeleteConfirm() {
+    await deleteFolder(folder.id);
+    router.refresh();
+  }
+
+  return (
+    <div>
+      <div className="sidebar-folder-row">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
+          className="sidebar-folder-btn"
           style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem",
-            padding: `0.4rem 1rem 0.4rem ${1 + depth * 0.75}rem`,
-            border: "none",
+            paddingLeft: `${1 + depth * 0.75}rem`,
             background: hasActiveChild ? "var(--glass-bg)" : "transparent",
             color: hasActiveChild ? "var(--text-primary)" : "var(--text-secondary)",
-            cursor: "pointer",
-            fontSize: "0.8125rem",
-            fontWeight: 600,
-            textAlign: "left",
-            transition: "background var(--transition-fast), color var(--transition-fast)",
-          }}
-          onMouseEnter={(e) => {
-            if (!hasActiveChild) e.currentTarget.style.background = "var(--glass-bg-hover)";
-          }}
-          onMouseLeave={(e) => {
-            if (!hasActiveChild) e.currentTarget.style.background = "transparent";
           }}
         >
           {/* Chevron */}
@@ -126,33 +167,96 @@ function TreeNode({ node, depth }: TreeNodeProps) {
             <path d="m9 18 6-6-6-6" />
           </svg>
 
-          {/* Folder icon */}
           <span style={{ fontSize: "0.875rem", flexShrink: 0 }}>
             {isExpanded ? "📂" : "📁"}
           </span>
 
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {node.title}
-          </span>
+          <span className="sidebar-folder-name">{folder.name}</span>
         </button>
 
-        {/* Children */}
-        <div
-          style={{
-            overflow: "hidden",
-            maxHeight: isExpanded ? "500px" : "0px",
-            transition: "max-height 200ms ease",
-          }}
-        >
-          {node.children?.map((child) => (
-            <TreeNode key={child.slug} node={child} depth={depth + 1} />
-          ))}
+        {/* Action buttons */}
+        <div className="sidebar-folder-actions">
+          <button
+            className="sidebar-action-btn"
+            onClick={() => setShowRenameDialog(true)}
+            title="Đổi tên"
+          >
+            ✏️
+          </button>
+          <button
+            className="sidebar-action-btn"
+            onClick={handleDeleteClick}
+            title="Xóa"
+          >
+            🗑️
+          </button>
         </div>
       </div>
-    );
-  }
 
-  // Article node
+      {/* Children */}
+      <div
+        style={{
+          overflow: "hidden",
+          maxHeight: isExpanded ? "500px" : "0px",
+          transition: "max-height 200ms ease",
+        }}
+      >
+        {folder.children.map((child) => (
+          <FolderNode key={child.id} folder={child} depth={depth + 1} />
+        ))}
+        {folder.articles.map((article) => (
+          <ArticleNode
+            key={article.id}
+            article={article}
+            depth={depth + 1}
+            folderSlug={folder.slug}
+          />
+        ))}
+      </div>
+
+      {showRenameDialog && (
+        <FolderDialog
+          mode="rename"
+          isOpen={showRenameDialog}
+          onClose={() => setShowRenameDialog(false)}
+          folderId={folder.id}
+          currentName={folder.name}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      <DeleteConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Xóa folder"
+        message={
+          articleCount && articleCount > 0
+            ? `Folder "${folder.name}" có ${articleCount} bài viết. Xóa folder sẽ xóa tất cả bài viết bên trong.`
+            : `Bạn có chắc muốn xóa folder "${folder.name}"?`
+        }
+      />
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// ArticleNode — Article link item
+// ──────────────────────────────────────────────
+
+interface ArticleNodeProps {
+  article: SidebarArticle;
+  depth: number;
+  folderSlug?: string;
+}
+
+function ArticleNode({ article, depth, folderSlug }: ArticleNodeProps) {
+  const pathname = usePathname();
+  const articlePath = folderSlug
+    ? `/knowledge/${folderSlug}/${article.slug}`
+    : `/knowledge/${article.slug}`;
+  const isActive = pathname === articlePath;
+
   return (
     <Link
       href={articlePath}
@@ -177,20 +281,18 @@ function TreeNode({ node, depth }: TreeNodeProps) {
         if (!isActive) e.currentTarget.style.background = "transparent";
       }}
     >
-      {/* Status dot */}
-      {node.status && (
+      {article.status && (
         <span
           style={{
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: STATUS_COLORS[node.status] || "var(--text-muted)",
+            background: STATUS_COLORS[article.status] || "var(--text-muted)",
             flexShrink: 0,
           }}
         />
       )}
 
-      {/* Title */}
       <span
         style={{
           overflow: "hidden",
@@ -198,7 +300,7 @@ function TreeNode({ node, depth }: TreeNodeProps) {
           whiteSpace: "nowrap",
         }}
       >
-        {node.title}
+        {article.title}
       </span>
     </Link>
   );

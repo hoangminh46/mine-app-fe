@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ArticleListItem } from "@/lib/knowledge";
+import type { ArticleListItem } from "@/lib/types";
 
 interface FolderListingProps {
   folderName: string;
@@ -20,7 +20,7 @@ export default function FolderListing({ folderName, articles }: FolderListingPro
           Chưa có bài viết nào
         </h2>
         <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-          Thêm file .md vào thư mục <code>{folderName}/</code> để bắt đầu.
+          Click <strong>📝</strong> ở sidebar để tạo bài viết mới trong folder này.
         </p>
       </div>
     );

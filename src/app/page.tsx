@@ -1,23 +1,17 @@
 import Link from "next/link";
-import { getAllArticles } from "@/lib/knowledge";
+import { getAllUserArticles } from "@/lib/db/queries/articles";
 
 export default async function DashboardPage() {
-  const articles = await getAllArticles();
+  const articles = await getAllUserArticles();
 
   // Stats
   const total = articles.length;
-  const learningCount = articles.filter((a) => a.frontmatter.status === "learning").length;
-  const reviewedCount = articles.filter((a) => a.frontmatter.status === "reviewed").length;
-  const masteredCount = articles.filter((a) => a.frontmatter.status === "mastered").length;
+  const learningCount = articles.filter((a) => a.status === "learning").length;
+  const reviewedCount = articles.filter((a) => a.status === "reviewed").length;
+  const masteredCount = articles.filter((a) => a.status === "mastered").length;
 
-  // Recent articles sorted by updated date
-  const recentArticles = [...articles]
-    .sort((a, b) => {
-      const dateA = a.frontmatter.updated || a.frontmatter.created || "";
-      const dateB = b.frontmatter.updated || b.frontmatter.created || "";
-      return new Date(String(dateB)).getTime() - new Date(String(dateA)).getTime();
-    })
-    .slice(0, 5);
+  // Recent articles (already sorted by updated_at DESC from query)
+  const recentArticles = articles.slice(0, 5);
 
   const stats = [
     { label: "Total Articles", count: total, emoji: "📚", className: "stat-total" },
@@ -60,28 +54,35 @@ export default async function DashboardPage() {
         {recentArticles.length > 0 ? (
           <div className="dashboard-recent">
             {recentArticles.map((article) => {
-              const category = article.slug.split("/")[0] || "";
-              const categoryLabel = category
-                .split("-")
-                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(" ");
+              const articlePath = article.folderSlug
+                ? `/knowledge/${article.folderSlug}/${article.slug}`
+                : `/knowledge/${article.slug}`;
 
               return (
                 <Link
-                  key={article.slug}
-                  href={`/knowledge/${article.slug}`}
+                  key={article.id}
+                  href={articlePath}
                   className="glass-panel dashboard-article-item"
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="article-item-title">{article.frontmatter.title}</div>
+                    <div className="article-item-title">{article.title}</div>
                     <div className="article-item-meta">
-                      <span className="article-item-category">{categoryLabel}</span>
-                      <span>·</span>
+                      {article.folderSlug && (
+                        <>
+                          <span className="article-item-category">
+                            {article.folderSlug
+                              .split("-")
+                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .join(" ")}
+                          </span>
+                          <span>·</span>
+                        </>
+                      )}
                       <span>{article.readingTime} min read</span>
                     </div>
                   </div>
-                  <span className={`glass-pill status-${article.frontmatter.status}`} style={{ flexShrink: 0 }}>
-                    {article.frontmatter.status}
+                  <span className={`glass-pill status-${article.status}`} style={{ flexShrink: 0 }}>
+                    {article.status}
                   </span>
                 </Link>
               );
@@ -89,21 +90,13 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="dashboard-empty">
-            <div style={{ fontSize: "2rem" }}>📭</div>
-            <p>Chưa có bài viết nào</p>
+            <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📭</div>
+            <p style={{ marginBottom: "1rem" }}>Chưa có bài viết nào</p>
+            <Link href="/knowledge/editor" className="dashboard-cta-btn">
+              📝 Tạo bài viết đầu tiên
+            </Link>
           </div>
         )}
-      </section>
-
-      {/* Quick Start */}
-      <section className="dashboard-section">
-        <h2 className="dashboard-section-title">🚀 Quick Start</h2>
-        <div className="dashboard-quick-start glass-panel">
-          <p>
-            Thêm file <code>.md</code> vào thư mục <code>docs/knowledge/</code> để bắt đầu.
-            Tạo thư mục con để phân loại theo chủ đề.
-          </p>
-        </div>
       </section>
     </div>
   );
