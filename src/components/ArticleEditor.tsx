@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { createArticle, updateArticle } from "@/lib/actions/articles";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/utils/draft";
+import type { DraftData } from "@/lib/utils/draft";
 import type { SidebarFolder } from "@/lib/db/queries/folders";
 
 // Lazy load markdown editor (heavy component, avoid SSR)
@@ -38,6 +40,98 @@ export default function ArticleEditor({
   const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(", ") || "");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [showDraftRecovery, setShowDraftRecovery] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<DraftData | null>(null);
+
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasUserEdited = useRef(false);
+
+  // Step 1: Check for existing draft on mount
+  useEffect(() => {
+    const draft = loadDraft(articleId);
+    if (!draft) return;
+
+    // Draft exists — check if it's newer than initial data
+    const hasChanges =
+      draft.title !== (initialData?.title || "") ||
+      draft.content !== (initialData?.content || "");
+
+    if (hasChanges) {
+      setPendingDraft(draft);
+      setShowDraftRecovery(true);
+    } else {
+      clearDraft(articleId);
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Step 2: Auto-save draft every 5s after user edits
+  const scheduleDraftSave = useCallback(() => {
+    if (!hasUserEdited.current) return;
+
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+
+    autoSaveTimer.current = setTimeout(() => {
+      setDraftStatus("saving");
+
+      const draftData: DraftData = {
+        title,
+        content,
+        folderId,
+        status,
+        difficulty,
+        tagsInput,
+        savedAt: Date.now(),
+      };
+
+      const saved = saveDraft(draftData, articleId);
+
+      if (saved) {
+        setDraftStatus("saved");
+        setTimeout(() => setDraftStatus("idle"), 2000);
+      } else {
+        setDraftStatus("idle");
+      }
+    }, 5000);
+  }, [title, content, folderId, status, difficulty, tagsInput, articleId]);
+
+  useEffect(() => {
+    scheduleDraftSave();
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, [scheduleDraftSave]);
+
+  // Mark that user has started editing
+  function handleFieldChange<T>(setter: (val: T) => void) {
+    return (val: T) => {
+      hasUserEdited.current = true;
+      setter(val);
+    };
+  }
+
+  // Draft recovery handlers
+  function handleRestoreDraft() {
+    if (!pendingDraft) return;
+    setTitle(pendingDraft.title);
+    setContent(pendingDraft.content);
+    setFolderId(pendingDraft.folderId);
+    setStatus(pendingDraft.status);
+    setDifficulty(pendingDraft.difficulty);
+    setTagsInput(pendingDraft.tagsInput);
+    setShowDraftRecovery(false);
+    setPendingDraft(null);
+  }
+
+  function handleDiscardDraft() {
+    clearDraft(articleId);
+    setShowDraftRecovery(false);
+    setPendingDraft(null);
+  }
 
   function flattenFolders(
     folderList: SidebarFolder[],
@@ -82,6 +176,9 @@ export default function ArticleEditor({
         return;
       }
 
+      // Clear draft after successful save
+      clearDraft(articleId);
+
       if (result?.redirectPath) {
         router.push(result.redirectPath);
         router.refresh();
@@ -95,6 +192,21 @@ export default function ArticleEditor({
 
   return (
     <div className="editor-page">
+      {/* Draft recovery banner */}
+      {showDraftRecovery && pendingDraft && (
+        <div className="draft-recovery-banner">
+          <span>📝 Phát hiện bản nháp chưa lưu từ {new Date(pendingDraft.savedAt).toLocaleString("vi-VN")}</span>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button className="draft-restore-btn" onClick={handleRestoreDraft}>
+              Khôi phục
+            </button>
+            <button className="draft-discard-btn" onClick={handleDiscardDraft}>
+              Bỏ qua
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="editor-header">
         <button
@@ -103,9 +215,17 @@ export default function ArticleEditor({
         >
           ← Quay lại
         </button>
-        <h1 className="editor-page-title">
-          {mode === "create" ? "📝 Bài viết mới" : "✏️ Chỉnh sửa"}
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <h1 className="editor-page-title">
+            {mode === "create" ? "📝 Bài viết mới" : "✏️ Chỉnh sửa"}
+          </h1>
+          {/* Draft saved indicator */}
+          {draftStatus !== "idle" && (
+            <span className="draft-status-indicator">
+              {draftStatus === "saving" ? "💾 Đang lưu nháp..." : "✅ Đã lưu nháp"}
+            </span>
+          )}
+        </div>
         <button
           className="editor-save-btn"
           onClick={handleSave}
@@ -121,7 +241,7 @@ export default function ArticleEditor({
       <input
         type="text"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => handleFieldChange(setTitle)(e.target.value)}
         placeholder="Tiêu đề bài viết..."
         className="editor-title-input"
         autoFocus
@@ -131,7 +251,7 @@ export default function ArticleEditor({
       <div className="editor-meta-row">
         <select
           value={folderId}
-          onChange={(e) => setFolderId(e.target.value)}
+          onChange={(e) => handleFieldChange(setFolderId)(e.target.value)}
           className="editor-select"
         >
           <option value="">📁 Không có folder</option>
@@ -144,7 +264,7 @@ export default function ArticleEditor({
 
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) => handleFieldChange(setStatus)(e.target.value)}
           className="editor-select"
         >
           <option value="learning">📖 Learning</option>
@@ -154,7 +274,7 @@ export default function ArticleEditor({
 
         <select
           value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
+          onChange={(e) => handleFieldChange(setDifficulty)(e.target.value)}
           className="editor-select"
         >
           <option value="beginner">🟢 Beginner</option>
@@ -165,7 +285,7 @@ export default function ArticleEditor({
         <input
           type="text"
           value={tagsInput}
-          onChange={(e) => setTagsInput(e.target.value)}
+          onChange={(e) => handleFieldChange(setTagsInput)(e.target.value)}
           placeholder="Tags (phân cách bằng dấu phẩy)"
           className="editor-tags-input"
         />
@@ -175,7 +295,7 @@ export default function ArticleEditor({
       <div className="editor-container" data-color-mode="dark">
         <MDEditor
           value={content}
-          onChange={(val) => setContent(val || "")}
+          onChange={(val) => handleFieldChange(setContent)(val || "")}
           height={600}
           preview="live"
           visibleDragbar={false}

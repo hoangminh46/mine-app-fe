@@ -90,6 +90,62 @@
         "Supabase free tier DB pauses after 1 week inactive",
         "Lockfile swc patching warning on build (cosmetic, doesn't affect output)"
       ]
+    },
+    {
+      "id": "handoff-20260601-135000",
+      "saved_at": "2026-06-01T13:50:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "c4af474f3584696222d45387dc728379543039ff",
+      "base_sha": "fa62caa0671cd6f6d4f9308185a38794ef6ea762",
+      "source": "working_tree",
+      "commit_range": "fa62caa..c4af474 (no new commits, staged changes only)",
+      "summary": "Optimization plan complete (4 phases): Error handling/loading, Search performance, Editor auto-save, UX polish. All staged, not yet committed.",
+      "project_changes": [
+        "Phase 01: Added loading.tsx + error.tsx skeletons for root, knowledge, editor pages. Skeleton CSS shimmer animation",
+        "Phase 02: Created getSearchableArticles() lightweight query with React cache() — search no longer fetches full article content",
+        "Phase 03: ArticleEditor auto-save draft to localStorage every 5s, recovery banner on mount, draft cleared after DB save",
+        "Phase 04: Sidebar expand/collapse persisted via useSyncExternalStore + external store pattern. Dashboard shows real folder name from DB join",
+        "Bugfix: React 19 hydration mismatch — replaced useState(localStorage) with useSyncExternalStore + server snapshot",
+        "Bugfix: React 19 cascading render error — replaced useEffect+setState with proper subscribe/notify external store"
+      ],
+      "commits": [],
+      "working_tree": {
+        "status": "dirty",
+        "files": [
+          "src/app/globals.css (skeleton CSS)",
+          "src/app/loading.tsx (NEW)",
+          "src/app/error.tsx (NEW)",
+          "src/app/knowledge/loading.tsx (NEW)",
+          "src/app/knowledge/error.tsx (NEW)",
+          "src/app/knowledge/editor/loading.tsx (NEW)",
+          "src/app/knowledge/editor/error.tsx (NEW)",
+          "src/app/page.tsx (folderName instead of slug split)",
+          "src/components/AppShell.tsx (header hidden when unauthenticated)",
+          "src/components/ArticleEditor.tsx (auto-save draft + recovery)",
+          "src/components/Sidebar.tsx (useSyncExternalStore for expand state)",
+          "src/lib/db/queries/articles.ts (getSearchableArticles, folderName field)",
+          "src/lib/search.ts (uses getSearchableArticles)",
+          "src/lib/utils/draft.ts (NEW — localStorage helpers)",
+          "src/lib/utils/sidebar-state.ts (NEW — external store with subscribe)"
+        ]
+      },
+      "decisions": [
+        "useSyncExternalStore for localStorage-backed state (React 19 compatible — no hydration mismatch, no cascading render)",
+        "External store pattern with subscribe/notify for sidebar state (not useState+useEffect)",
+        "React cache() for getSearchableArticles to deduplicate within server request tree",
+        "Auto-save draft with 5s debounce + hasUserEdited guard to avoid saving on mount",
+        "folderName from DB join instead of splitting slug string"
+      ],
+      "next_steps": [
+        "Commit all staged optimization changes",
+        "Consider Part B: expand new features (tags page, article export, mobile responsive)",
+        "Deploy to Vercel when ready"
+      ],
+      "open_questions": [
+        "Supabase free tier DB pauses after 1 week inactive",
+        "Next.js 16 middleware → proxy deprecation warning (still works)"
+      ]
     }
   ]
 }
+

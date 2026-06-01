@@ -36,6 +36,7 @@ export interface ArticleListItem {
   excerpt: string;
   folderId: string | null;
   folderSlug: string | null;
+  folderName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,7 +87,7 @@ export async function getArticlesByFolder(
   const supabase = await createClient();
   const { data } = await supabase
     .from("articles")
-    .select("*, folders!articles_folder_id_fkey(slug)")
+    .select("*, folders!articles_folder_id_fkey(slug, name)")
     .eq("user_id", user.id)
     .eq("folder_id", folderId)
     .order("order", { ascending: true })
@@ -102,7 +103,7 @@ export async function getAllUserArticles(): Promise<ArticleListItem[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("articles")
-    .select("*, folders!articles_folder_id_fkey(slug)")
+    .select("*, folders!articles_folder_id_fkey(slug, name)")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -110,6 +111,7 @@ export async function getAllUserArticles(): Promise<ArticleListItem[]> {
 }
 
 function toArticleListItem(row: Record<string, unknown>): ArticleListItem {
+  const folder = row.folders as { slug: string; name: string } | null;
   return {
     id: row.id as string,
     title: row.title as string,
@@ -120,8 +122,47 @@ function toArticleListItem(row: Record<string, unknown>): ArticleListItem {
     readingTime: calculateReadingTime((row.content as string) || ""),
     excerpt: generateExcerpt((row.content as string) || ""),
     folderId: row.folder_id as string | null,
-    folderSlug: (row.folders as { slug: string } | null)?.slug || null,
+    folderSlug: folder?.slug || null,
+    folderName: folder?.name || null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
 }
+
+// Lightweight type for search index — no full content
+export interface SearchableArticle {
+  title: string;
+  slug: string;
+  status: string;
+  difficulty: string;
+  tags: string[];
+  excerpt: string;
+  folderSlug: string | null;
+}
+
+import { cache } from "react";
+
+// React cache() deduplicates this call within a single server request tree
+export const getSearchableArticles = cache(async (): Promise<SearchableArticle[]> => {
+  const user = await getUser();
+  if (!user) return [];
+
+  const supabase = await createClient();
+
+  // Only select fields needed for search — skip full content
+  const { data } = await supabase
+    .from("articles")
+    .select("title, slug, status, difficulty, tags, content, folders!articles_folder_id_fkey(slug)")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    title: row.title as string,
+    slug: row.slug as string,
+    status: row.status as string,
+    difficulty: row.difficulty as string,
+    tags: (row.tags as string[]) || [],
+    excerpt: generateExcerpt((row.content as string) || ""),
+    folderSlug: (row.folders as { slug: string } | null)?.slug || null,
+  }));
+});

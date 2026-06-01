@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { SidebarFolder, SidebarArticle } from "@/lib/db/queries/folders";
 import { deleteFolder, getFolderArticleCount, renameFolder } from "@/lib/actions/folders";
+import { subscribe, isFolderExpanded, setFolderExpanded } from "@/lib/utils/sidebar-state";
 import FolderDialog from "./FolderDialog";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
@@ -116,10 +117,21 @@ interface FolderNodeProps {
 function FolderNode({ folder, depth }: FolderNodeProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isExpanded, setIsExpanded] = useState(true);
+
+  // useSyncExternalStore: subscribe to store changes, server snapshot = true
+  const isExpanded = useSyncExternalStore(
+    subscribe,
+    useCallback(() => isFolderExpanded(folder.id), [folder.id]),
+    () => true,
+  );
+
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [articleCount, setArticleCount] = useState<number | null>(null);
+
+  function toggleExpanded() {
+    setFolderExpanded(folder.id, !isExpanded);
+  }
 
   const hasActiveChild = pathname?.includes(`/knowledge/`) &&
     (folder.articles.some((a) => pathname === `/knowledge/${folder.slug}/${a.slug}`) ||
@@ -140,7 +152,7 @@ function FolderNode({ folder, depth }: FolderNodeProps) {
     <div>
       <div className="sidebar-folder-row">
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleExpanded}
           className="sidebar-folder-btn"
           style={{
             paddingLeft: `${1 + depth * 0.75}rem`,

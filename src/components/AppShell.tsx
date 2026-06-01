@@ -57,19 +57,23 @@ export default function AppShell({ searchIndex, children, user }: AppShellProps)
 
   return (
     <>
-      <Navbar
-        onSearchOpen={handleSearchOpen}
-        onSidebarToggle={handleSidebarToggle}
-        sidebarOpen={sidebarOpen}
-        user={user}
-      />
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="sidebar-backdrop"
-          onClick={handleSidebarClose}
-          aria-hidden="true"
-        />
+      {user && (
+        <>
+          <Navbar
+            onSearchOpen={handleSearchOpen}
+            onSidebarToggle={handleSidebarToggle}
+            sidebarOpen={sidebarOpen}
+            user={user}
+          />
+          {/* Mobile sidebar backdrop */}
+          {sidebarOpen && (
+            <div
+              className="sidebar-backdrop"
+              onClick={handleSidebarClose}
+              aria-hidden="true"
+            />
+          )}
+        </>
       )}
       <div className={sidebarOpen ? "sidebar-open" : ""}>
         {children}

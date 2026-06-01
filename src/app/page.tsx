@@ -67,13 +67,10 @@ export default async function DashboardPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="article-item-title">{article.title}</div>
                     <div className="article-item-meta">
-                      {article.folderSlug && (
+                      {article.folderName && (
                         <>
                           <span className="article-item-category">
-                            {article.folderSlug
-                              .split("-")
-                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                              .join(" ")}
+                            {article.folderName}
                           </span>
                           <span>·</span>
                         </>

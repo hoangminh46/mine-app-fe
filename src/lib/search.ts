@@ -1,4 +1,4 @@
-import { getAllUserArticles } from "@/lib/db/queries/articles";
+import { getSearchableArticles } from "@/lib/db/queries/articles";
 
 export interface SearchItem {
   slug: string;
@@ -11,7 +11,7 @@ export interface SearchItem {
 }
 
 export async function buildSearchIndex(): Promise<SearchItem[]> {
-  const articles = await getAllUserArticles();
+  const articles = await getSearchableArticles();
 
   return articles.map((article) => ({
     slug: article.folderSlug
