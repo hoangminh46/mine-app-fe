@@ -97,7 +97,7 @@ const MARKDOWN_GUIDE_CONTENT = `# Hướng dẫn Markdown cơ bản
 | \`**bold**\` | **bold** |
 | \`*italic*\` | *italic* |
 | \`~~strikethrough~~\` | ~~strikethrough~~ |
-| \`\\\`inline code\\\`\` | \`inline code\` |
+| \`\` \`inline code\` \`\` | \`inline code\` |
 
 ## Lists
 
@@ -110,12 +110,25 @@ const MARKDOWN_GUIDE_CONTENT = `# Hướng dẫn Markdown cơ bản
 2. Second
 \`\`\`
 
+Kết quả:
+
+- Item 1
+- Item 2
+  - Sub item
+
+1. First
+2. Second
+
 ## Links & Images
 
 \`\`\`markdown
 [Link text](https://example.com)
 ![Alt text](image-url.jpg)
 \`\`\`
+
+Kết quả:
+
+[Link text](https://example.com)
 
 ## Code blocks
 
@@ -139,6 +152,12 @@ function hello() {
 |-------|-------|
 | A     | B     |
 \`\`\`
+
+Kết quả:
+
+| Cột 1 | Cột 2 |
+|-------|-------|
+| A     | B     |
 
 Hãy thử viết bài đầu tiên của bạn! ✍️
 `;

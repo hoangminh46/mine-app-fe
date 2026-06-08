@@ -8,6 +8,7 @@ import { deleteFolder, getFolderArticleCount, renameFolder } from "@/lib/actions
 import { subscribe, isFolderExpanded, setFolderExpanded } from "@/lib/utils/sidebar-state";
 import FolderDialog from "./FolderDialog";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import { useToast } from "./Toast";
 
 const STATUS_COLORS: Record<string, string> = {
   learning: "var(--status-learning)",
@@ -17,11 +18,10 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface SidebarProps {
   folders: SidebarFolder[];
-  rootArticles: SidebarArticle[];
 }
 
-export default function Sidebar({ folders, rootArticles }: SidebarProps) {
-  const isEmpty = folders.length === 0 && rootArticles.length === 0;
+export default function Sidebar({ folders }: SidebarProps) {
+  const isEmpty = folders.length === 0;
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   return (
@@ -34,13 +34,15 @@ export default function Sidebar({ folders, rootArticles }: SidebarProps) {
       <div className="sidebar-header">
         <span className="sidebar-header-label">Knowledge Base</span>
         <div style={{ display: "flex", gap: "4px" }}>
-          <Link
-            href="/knowledge/editor"
-            className="sidebar-add-btn"
-            title="Bài viết mới"
-          >
-            📝
-          </Link>
+          {!isEmpty && (
+            <Link
+              href="/knowledge/editor"
+              className="sidebar-add-btn"
+              title="Bài viết mới"
+            >
+              📝
+            </Link>
+          )}
           <button
             className="sidebar-add-btn"
             onClick={() => setShowCreateDialog(true)}
@@ -67,9 +69,6 @@ export default function Sidebar({ folders, rootArticles }: SidebarProps) {
       <nav>
         {folders.map((folder) => (
           <FolderNode key={folder.id} folder={folder} depth={0} />
-        ))}
-        {rootArticles.map((article) => (
-          <ArticleNode key={article.id} article={article} depth={0} />
         ))}
       </nav>
 
@@ -117,6 +116,7 @@ interface FolderNodeProps {
 function FolderNode({ folder, depth }: FolderNodeProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { toast } = useToast();
 
   // useSyncExternalStore: subscribe to store changes, server snapshot = true
   const isExpanded = useSyncExternalStore(
@@ -144,7 +144,12 @@ function FolderNode({ folder, depth }: FolderNodeProps) {
   }
 
   async function handleDeleteConfirm() {
-    await deleteFolder(folder.id);
+    const result = await deleteFolder(folder.id);
+    if (result?.error) {
+      toast(result.error, "error");
+      return;
+    }
+    toast(`Đã xóa folder "${folder.name}"`, "success");
     router.refresh();
   }
 
@@ -259,14 +264,12 @@ function FolderNode({ folder, depth }: FolderNodeProps) {
 interface ArticleNodeProps {
   article: SidebarArticle;
   depth: number;
-  folderSlug?: string;
+  folderSlug: string;
 }
 
 function ArticleNode({ article, depth, folderSlug }: ArticleNodeProps) {
   const pathname = usePathname();
-  const articlePath = folderSlug
-    ? `/knowledge/${folderSlug}/${article.slug}`
-    : `/knowledge/${article.slug}`;
+  const articlePath = `/knowledge/${folderSlug}/${article.slug}`;
   const isActive = pathname === articlePath;
 
   return (

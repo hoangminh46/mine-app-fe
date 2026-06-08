@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import {
   renderMarkdown,
-  getHeadings,
   calculateReadingTime,
   generateExcerpt,
 } from "@/lib/markdown";
@@ -57,8 +56,7 @@ export async function getArticleBySlug(
 
   if (!data) return null;
 
-  const htmlContent = await renderMarkdown(data.content);
-  const headings = getHeadings(htmlContent);
+  const { htmlContent, headings } = await renderMarkdown(data.content);
 
   return {
     id: data.id,
@@ -166,3 +164,92 @@ export const getSearchableArticles = cache(async (): Promise<SearchableArticle[]
     folderSlug: (row.folders as { slug: string } | null)?.slug || null,
   }));
 });
+
+export interface DashboardFolder {
+  id: string;
+  name: string;
+  slug: string;
+  articleCount: number;
+  latestArticleTitle: string | null;
+  latestUpdatedAt: string | null;
+}
+
+export interface TagCount {
+  tag: string;
+  count: number;
+}
+
+export interface DashboardData {
+  folders: DashboardFolder[];
+  popularTags: TagCount[];
+}
+
+export const getDashboardData = cache(async (): Promise<DashboardData> => {
+  const user = await getUser();
+  if (!user) return { folders: [], popularTags: [] };
+
+  const supabase = await createClient();
+
+  // Step 1: Fetch all folders
+  const { data: folders } = await supabase
+    .from("folders")
+    .select("id, name, slug")
+    .eq("user_id", user.id)
+    .order("order", { ascending: true })
+    .order("name", { ascending: true });
+
+  // Step 2: Fetch all articles (lightweight — only folder_id, tags, updated_at, title)
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("folder_id, tags, updated_at, title")
+    .eq("user_id", user.id);
+
+  const articleList = articles || [];
+  const folderList = folders || [];
+
+  // Step 3: Build folder overview with article counts
+  const folderMap = new Map<string, { count: number; latestTitle: string | null; latestDate: string | null }>();
+  for (const f of folderList) {
+    folderMap.set(f.id, { count: 0, latestTitle: null, latestDate: null });
+  }
+
+  for (const a of articleList) {
+    if (a.folder_id && folderMap.has(a.folder_id)) {
+      const entry = folderMap.get(a.folder_id)!;
+      entry.count++;
+      if (!entry.latestDate || a.updated_at > entry.latestDate) {
+        entry.latestDate = a.updated_at;
+        entry.latestTitle = a.title;
+      }
+    }
+  }
+
+  const dashboardFolders: DashboardFolder[] = folderList.map((f) => {
+    const stats = folderMap.get(f.id)!;
+    return {
+      id: f.id,
+      name: f.name,
+      slug: f.slug,
+      articleCount: stats.count,
+      latestArticleTitle: stats.latestTitle,
+      latestUpdatedAt: stats.latestDate,
+    };
+  });
+
+  // Step 4: Aggregate popular tags
+  const tagCounts = new Map<string, number>();
+  for (const a of articleList) {
+    const tags = (a.tags as string[]) || [];
+    for (const tag of tags) {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+
+  const popularTags: TagCount[] = Array.from(tagCounts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
+
+  return { folders: dashboardFolders, popularTags };
+});
+

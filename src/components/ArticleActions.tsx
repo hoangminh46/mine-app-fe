@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { deleteArticle } from "@/lib/actions/articles";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import { useToast } from "./Toast";
 
 interface ArticleActionsProps {
   articleId: string;
@@ -13,14 +14,16 @@ interface ArticleActionsProps {
 
 export default function ArticleActions({ articleId, articleSlug }: ArticleActionsProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [showDelete, setShowDelete] = useState(false);
 
   async function handleDelete() {
     const result = await deleteArticle(articleId);
     if (result?.error) {
-      alert(result.error);
+      toast(result.error, "error");
       return;
     }
+    toast("Đã xóa bài viết", "success");
     router.push("/");
     router.refresh();
   }

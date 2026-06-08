@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "./Navbar";
 import SearchModal from "./SearchModal";
+import { ToastProvider } from "./Toast";
 import type { SearchItem } from "@/lib/search";
 
 interface AppShellProps {
@@ -56,7 +57,7 @@ export default function AppShell({ searchIndex, children, user }: AppShellProps)
   }, [sidebarOpen]);
 
   return (
-    <>
+    <ToastProvider>
       {user && (
         <>
           <Navbar
@@ -79,6 +80,6 @@ export default function AppShell({ searchIndex, children, user }: AppShellProps)
         {children}
       </div>
       <SearchModal searchIndex={searchIndex} />
-    </>
+    </ToastProvider>
   );
 }

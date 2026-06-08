@@ -8,10 +8,22 @@ import { generateSlug } from "@/lib/utils/slug";
 interface ArticleInput {
   title: string;
   content: string;
-  folderId: string | null;
+  folderId: string;
   status: string;
   difficulty: string;
   tags: string[];
+}
+
+// Defense-in-depth: strip dangerous HTML from raw markdown before DB storage
+function sanitizeMarkdownContent(content: string): string {
+  return content
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?>/gi, "")
+    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/javascript\s*:/gi, "")
+    .replace(/data\s*:\s*text\/html/gi, "");
 }
 
 export async function createArticle(input: ArticleInput) {
@@ -20,6 +32,10 @@ export async function createArticle(input: ArticleInput) {
 
   if (!input.title.trim()) {
     return { error: "Tiêu đề không được để trống" };
+  }
+
+  if (!input.folderId) {
+    return { error: "Bài viết bắt buộc phải nằm trong một folder" };
   }
 
   const slug = generateSlug(input.title);
@@ -47,7 +63,7 @@ export async function createArticle(input: ArticleInput) {
       user_id: user.id,
       title: input.title.trim(),
       slug,
-      content: input.content,
+      content: sanitizeMarkdownContent(input.content),
       folder_id: input.folderId,
       status: input.status || "learning",
       difficulty: input.difficulty || "beginner",
@@ -87,6 +103,10 @@ export async function updateArticle(articleId: string, input: ArticleInput) {
     return { error: "Tiêu đề không được để trống" };
   }
 
+  if (!input.folderId) {
+    return { error: "Bài viết bắt buộc phải nằm trong một folder" };
+  }
+
   const slug = generateSlug(input.title);
   if (!slug) {
     return { error: "Tiêu đề không hợp lệ" };
@@ -112,7 +132,7 @@ export async function updateArticle(articleId: string, input: ArticleInput) {
     .update({
       title: input.title.trim(),
       slug,
-      content: input.content,
+      content: sanitizeMarkdownContent(input.content),
       folder_id: input.folderId,
       status: input.status,
       difficulty: input.difficulty,

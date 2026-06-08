@@ -258,7 +258,6 @@ a {
 
 a:hover {
   color: var(--accent-secondary-hover);
-  text-decoration: underline;
 }
 
 code {
@@ -367,6 +366,13 @@ small {
 }
 
 /* Headings */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  scroll-margin-top: calc(var(--navbar-height) + 1.5rem);
+}
+
 .prose h1 {
   font-size: 2rem;
   margin-top: 2.5rem;
@@ -459,12 +465,32 @@ small {
   font-weight: 600;
 }
 
+/* Nested lists */
+.prose ul ul,
+.prose ol ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose ul ul li::before {
+  content: '–';
+  font-size: 0.8125rem;
+}
+
+.prose ol ol,
+.prose ul ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
 /* Tables */
 .prose table {
   width: 100%;
   margin-bottom: 1.5rem;
   border-collapse: collapse;
   font-size: 0.875rem;
+  display: block;
+  overflow-x: auto;
 }
 
 .prose th {
@@ -558,6 +584,59 @@ small {
 .prose em {
   font-style: italic;
 }
+
+/* Strikethrough (GFM) */
+.prose del {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Task list (GFM) */
+.prose ul.contains-task-list {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.prose li.task-list-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-left: 0;
+}
+
+.prose li.task-list-item::before {
+  content: none;
+}
+
+.prose li.task-list-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--glass-border);
+  border-radius: 3px;
+  background: var(--glass-bg);
+  cursor: default;
+  flex-shrink: 0;
+  position: relative;
+  top: 2px;
+}
+
+.prose li.task-list-item input[type="checkbox"]:checked {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.prose li.task-list-item input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 1px;
+  font-size: 0.75rem;
+  color: white;
+  font-weight: 700;
+}
+
 /* ──────────────────────────────────────────────
    11. CODE BLOCK COMPONENT
    ────────────────────────────────────────────── */
@@ -618,6 +697,15 @@ small {
   overflow-x: auto;
   font-size: 0.875rem;
   line-height: 1.6;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+/* Prose context: reset .prose pre styles when inside CodeBlock to avoid double-wrapping */
+.prose .code-block-wrapper pre {
+  margin: 0;
+  padding: 1.25rem;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -978,7 +1066,7 @@ small {
    17. DASHBOARD
    ────────────────────────────────────────────── */
 .dashboard {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 3rem 2rem;
 }
@@ -1021,13 +1109,18 @@ small {
 .dashboard-stat-card {
   text-align: center;
   padding: 1.25rem 1rem;
-  transition: all var(--transition-normal);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
   cursor: default;
 }
 
 .dashboard-stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--glass-shadow);
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 16px var(--glass-shadow);
 }
 
 .stat-emoji {
@@ -1077,12 +1170,17 @@ small {
   gap: 1rem;
   padding: 0.875rem 1rem;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  color: inherit;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .dashboard-article-item:hover {
-  transform: translateX(4px);
   background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 16px var(--glass-shadow);
 }
 
 .article-item-title {
@@ -1110,21 +1208,158 @@ small {
   color: var(--text-muted);
 }
 
-.dashboard-quick-start {
-  padding: 1.25rem;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
+/* Quick Actions */
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
 }
 
-.dashboard-quick-start code {
-  font-family: var(--font-mono);
-  font-size: 0.8125em;
-  background: var(--code-bg);
-  border: 1px solid var(--code-border);
-  border-radius: var(--radius-sm);
-  padding: 0.1em 0.35em;
+.dashboard-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  background: var(--glass-bg);
+}
+
+.dashboard-action-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, #a78bfa));
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+}
+
+.dashboard-action-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+.dashboard-action-divider {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dashboard-action-hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* 2-column grid: Folders + Recent */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Folders Overview */
+.dashboard-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dashboard-folder-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 0.625rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+  cursor: pointer;
+}
+
+.dashboard-folder-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 16px var(--glass-shadow);
+}
+
+.dashboard-folder-icon {
+  font-size: 1.25rem;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-folder-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.dashboard-folder-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dashboard-folder-count {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.dashboard-folder-latest {
+  grid-column: 2;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tags Cloud */
+.dashboard-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dashboard-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  cursor: default;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-tag:hover {
+  transform: translateY(-1px);
+  background: var(--glass-bg-hover);
+}
+
+.dashboard-tag-name {
   color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.dashboard-tag-count {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  background: var(--glass-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  min-width: 1.25rem;
+  text-align: center;
 }
 
 /* ──────────────────────────────────────────────
@@ -1142,12 +1377,16 @@ small {
   gap: 0.625rem;
   padding: 1.25rem;
   text-decoration: none;
-  transition: all var(--transition-normal);
+  color: inherit;
+  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  border: 1px solid var(--glass-border);
 }
 
 .folder-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--glass-shadow);
+  text-decoration: none;
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 16px var(--glass-shadow);
 }
 
 .folder-card-header {
@@ -1406,6 +1645,16 @@ small {
   /* Folder grid single column */
   .folder-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Dashboard grid single column */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .dashboard-action-hint {
+    display: none;
   }
 
   /* Search modal full width */
@@ -1943,6 +2192,29 @@ small {
   background: var(--bg-surface);
 }
 
+.editor-no-folder-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  font-size: 0.8125rem;
+  color: var(--status-reviewed);
+}
+
+.editor-create-folder-link {
+  color: var(--accent-secondary) !important;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.editor-create-folder-link:hover {
+  text-decoration: underline !important;
+}
+
 .editor-container {
   border-radius: 0.625rem;
   overflow: hidden;
@@ -2212,7 +2484,135 @@ small {
 }
 
 /* ──────────────────────────────────────────────
-   34. TAILWIND THEME OVERRIDES
+   35. TOAST NOTIFICATIONS
+   ────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  top: calc(var(--navbar-height) + 1.25rem);
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.125rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 8px 32px var(--glass-shadow),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 var(--glass-highlight);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  pointer-events: auto;
+  max-width: 460px;
+  min-width: 340px;
+}
+
+.toast-icon {
+  font-size: 1.375rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.toast-message {
+  flex: 1;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.375rem;
+  padding: 0.25rem 0.375rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  opacity: 0.5;
+  transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  opacity: 1;
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+
+/* Type variants — glassmorphism tinted backgrounds + colored left accent */
+.toast-success {
+  border-left: 4px solid var(--status-mastered);
+  background: linear-gradient(135deg, var(--status-mastered-bg), var(--glass-bg));
+}
+
+.toast-error {
+  border-left: 4px solid #f87171;
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.12), var(--glass-bg));
+}
+
+.toast-info {
+  border-left: 4px solid var(--accent-primary);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), var(--glass-bg));
+}
+
+/* Animations */
+.toast-enter {
+  animation: toastSlideIn 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toast-exit {
+  animation: toastSlideOut 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}
+
+@media (max-width: 767px) {
+  .toast-container {
+    left: 1rem;
+    right: 1rem;
+    top: calc(var(--navbar-height) + 0.75rem);
+  }
+
+  .toast-item {
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   36. TAILWIND THEME OVERRIDES
    ────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--bg-base);

@@ -1,9 +1,16 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import type { Schema } from "hast-util-sanitize";
 import rehypeStringify from "rehype-stringify";
+import { visit } from "unist-util-visit";
+import { toString } from "hast-util-to-string";
+import type { Root, Element } from "hast";
+import type { VFile } from "vfile";
 
 export interface Heading {
   id: string;
@@ -11,31 +18,61 @@ export interface Heading {
   level: 2 | 3 | 4;
 }
 
-const markdownProcessor = unified()
-  .use(remarkParse)
-  .use(remarkRehype, { allowDangerousHtml: true })
-  .use(rehypeSlug)
-  .use(rehypeHighlight, { detect: true, ignoreMissing: true })
-  .use(rehypeStringify, { allowDangerousHtml: true });
-
-export async function renderMarkdown(content: string): Promise<string> {
-  const result = await markdownProcessor.process(content);
-  return String(result);
+export interface MarkdownResult {
+  htmlContent: string;
+  headings: Heading[];
 }
 
-export function getHeadings(htmlContent: string): Heading[] {
-  const headingRegex = /<h([234])\s+id="([^"]*)"[^>]*>(.*?)<\/h[234]>/gi;
-  const headings: Heading[] = [];
-  let match: RegExpExecArray | null;
+// Whitelist highlight.js classes + heading ids so sanitize doesn't strip them
+const sanitizeSchema: Schema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    span: [...(defaultSchema.attributes?.span || []), ["className", /^hljs-/]],
+    code: [
+      ...(defaultSchema.attributes?.code || []),
+      ["className", /^hljs|^language-/],
+    ],
+    h1: [...(defaultSchema.attributes?.h1 || []), "id"],
+    h2: [...(defaultSchema.attributes?.h2 || []), "id"],
+    h3: [...(defaultSchema.attributes?.h3 || []), "id"],
+    h4: [...(defaultSchema.attributes?.h4 || []), "id"],
+  },
+};
 
-  while ((match = headingRegex.exec(htmlContent)) !== null) {
-    const level = parseInt(match[1], 10) as 2 | 3 | 4;
-    const id = match[2];
-    const text = match[3].replace(/<[^>]*>/g, "").trim();
-    headings.push({ id, text, level });
-  }
+function extractHeadings() {
+  return (tree: Root, file: VFile) => {
+    const headings: Heading[] = [];
+    visit(tree, "element", (node: Element) => {
+      const tag = node.tagName;
+      if (tag === "h2" || tag === "h3" || tag === "h4") {
+        headings.push({
+          id: (node.properties?.id as string) || "",
+          text: toString(node),
+          level: parseInt(tag[1], 10) as 2 | 3 | 4,
+        });
+      }
+    });
+    file.data.headings = headings;
+  };
+}
 
-  return headings;
+const markdownProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype)
+  .use(rehypeSlug)
+  .use(rehypeHighlight, { ignoreMissing: true } as Parameters<typeof rehypeHighlight>[0])
+  .use(extractHeadings)
+  .use(rehypeSanitize, sanitizeSchema)
+  .use(rehypeStringify);
+
+export async function renderMarkdown(content: string): Promise<MarkdownResult> {
+  const result = await markdownProcessor.process(content);
+  return {
+    htmlContent: String(result),
+    headings: (result.data.headings as Heading[]) || [],
+  };
 }
 
 const WORDS_PER_MINUTE = 200;

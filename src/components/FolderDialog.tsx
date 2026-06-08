@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { createFolder, renameFolder } from "@/lib/actions/folders";
 import { useRouter } from "next/navigation";
+import { useToast } from "./Toast";
 
 interface FolderDialogProps {
   mode: "create" | "rename";
@@ -26,6 +27,7 @@ export default function FolderDialog({
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   if (!isOpen) return null;
 
@@ -42,20 +44,25 @@ export default function FolderDialog({
         const result = await createFolder(formData);
         if (result?.error) {
           setError(result.error);
+          toast(result.error, "error");
           return;
         }
+        toast(`Đã tạo folder "${name}"`, "success");
       } else if (mode === "rename" && folderId) {
         const result = await renameFolder(folderId, name);
         if (result?.error) {
           setError(result.error);
+          toast(result.error, "error");
           return;
         }
+        toast(`Đã đổi tên folder thành "${name}"`, "success");
       }
 
       router.refresh();
       onClose();
     } catch {
       setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+      toast("Đã có lỗi xảy ra. Vui lòng thử lại.", "error");
     } finally {
       setLoading(false);
     }
