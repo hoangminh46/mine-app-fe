@@ -1,65 +1,181 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getAllUserArticles, getDashboardData } from "@/lib/db/queries/articles";
 
-export default function Home() {
+export default async function DashboardPage() {
+  const [articles, dashboardData] = await Promise.all([
+    getAllUserArticles(),
+    getDashboardData(),
+  ]);
+
+  const { folders, popularTags } = dashboardData;
+  const hasFolders = folders.length > 0;
+
+  // Stats
+  const total = articles.length;
+  const learningCount = articles.filter((a) => a.status === "learning").length;
+  const reviewedCount = articles.filter((a) => a.status === "reviewed").length;
+  const masteredCount = articles.filter((a) => a.status === "mastered").length;
+
+  // Recent articles (already sorted by updated_at DESC from query)
+  const recentArticles = articles.slice(0, 5);
+
+  const stats = [
+    { label: "Total Articles", count: total, emoji: "📚", className: "stat-total" },
+    { label: "Learning", count: learningCount, emoji: "📖", className: "stat-learning" },
+    { label: "Reviewed", count: reviewedCount, emoji: "🔍", className: "stat-reviewed" },
+    { label: "Mastered", count: masteredCount, emoji: "✅", className: "stat-mastered" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="dashboard">
+      {/* Hero Section + Quick Actions */}
+      <section className="dashboard-hero">
+        <h1 className="dashboard-title gradient-text">
+          Mine Knowledge Base
+        </h1>
+        <p className="dashboard-subtitle">
+          Lưu trữ, tổ chức và học tập kiến thức hiệu quả
+        </p>
+        <div className="dashboard-actions">
+          {hasFolders ? (
+            <Link href="/knowledge/editor" className="dashboard-action-btn dashboard-action-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+              </svg>
+              Bài viết mới
+            </Link>
+          ) : (
+            <Link href="/knowledge" className="dashboard-action-btn dashboard-action-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+              </svg>
+              Tạo folder đầu tiên
+            </Link>
+          )}
+          <span className="dashboard-action-divider">hoặc</span>
+          <kbd className="dashboard-kbd">Ctrl K</kbd>
+          <span className="dashboard-action-hint">để tìm kiếm nhanh</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      {/* Stats Cards */}
+      <section className="dashboard-stats">
+        {stats.map((stat) => (
+          <div key={stat.label} className={`glass-panel dashboard-stat-card ${stat.className}`}>
+            <div className="stat-emoji">{stat.emoji}</div>
+            <div className="stat-count">{stat.count}</div>
+            <div className="stat-label">{stat.label}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* Folders + Recent: 2-column layout */}
+      <div className="dashboard-grid">
+        {/* Folders Overview */}
+        {folders.length > 0 && (
+          <section className="dashboard-section">
+            <h2 className="dashboard-section-title">📂 Folders</h2>
+            <div className="dashboard-folders">
+              {folders.map((folder) => (
+                <Link
+                  key={folder.id}
+                  href={`/knowledge/${folder.slug}`}
+                  className="glass-panel dashboard-folder-card"
+                >
+                  <div className="dashboard-folder-icon">📁</div>
+                  <div className="dashboard-folder-info">
+                    <span className="dashboard-folder-name">{folder.name}</span>
+                    <span className="dashboard-folder-count">
+                      {folder.articleCount} {folder.articleCount === 1 ? "bài" : "bài"}
+                    </span>
+                  </div>
+                  {folder.latestArticleTitle && (
+                    <div className="dashboard-folder-latest" title={folder.latestArticleTitle}>
+                      {folder.latestArticleTitle}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Recent Articles */}
+        <section className="dashboard-section">
+          <h2 className="dashboard-section-title">📝 Recent Articles</h2>
+          {recentArticles.length > 0 ? (
+            <div className="dashboard-recent">
+              {recentArticles.map((article) => {
+                const articlePath = article.folderSlug
+                  ? `/knowledge/${article.folderSlug}/${article.slug}`
+                  : `/knowledge/${article.slug}`;
+
+                return (
+                  <Link
+                    key={article.id}
+                    href={articlePath}
+                    className="glass-panel dashboard-article-item"
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="article-item-title">{article.title}</div>
+                      <div className="article-item-meta">
+                        {article.folderName && (
+                          <>
+                            <span className="article-item-category">
+                              {article.folderName}
+                            </span>
+                            <span>·</span>
+                          </>
+                        )}
+                        <span>{article.readingTime} min read</span>
+                      </div>
+                    </div>
+                    <span className={`glass-pill status-${article.status}`} style={{ flexShrink: 0 }}>
+                      {article.status}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="dashboard-empty">
+              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📭</div>
+              {hasFolders ? (
+                <>
+                  <p style={{ marginBottom: "1rem" }}>Chưa có bài viết nào</p>
+                  <Link href="/knowledge/editor" className="dashboard-cta-btn">
+                    📝 Tạo bài viết đầu tiên
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <p style={{ marginBottom: "1rem" }}>Hãy tạo folder để bắt đầu tổ chức kiến thức</p>
+                  <Link href="/knowledge" className="dashboard-cta-btn">
+                    📂 Tạo folder đầu tiên
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Popular Tags */}
+      {popularTags.length > 0 && (
+        <section className="dashboard-section">
+          <h2 className="dashboard-section-title">🏷️ Popular Tags</h2>
+          <div className="dashboard-tags">
+            {popularTags.map(({ tag, count }) => (
+              <span key={tag} className="glass-panel dashboard-tag">
+                <span className="dashboard-tag-name">#{tag}</span>
+                <span className="dashboard-tag-count">{count}</span>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -1,0 +1,151 @@
+{
+  "entries": [
+    {
+      "id": "handoff-20260522-152000",
+      "saved_at": "2026-05-22T15:20:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "06f0fc9a199e2d8b2b1b2721f8a80418731ae8ba",
+      "base_sha": "089f72caaa00164e2dae18f606707e026228d5d0",
+      "source": "commit",
+      "commit_range": "089f72c..06f0fc9",
+      "summary": "Fullstack migration Phase 01-03 complete: Supabase setup, DB schema, Auth UI",
+      "project_changes": [
+        "Installed Supabase + Drizzle ORM dependencies",
+        "Created Supabase client utilities (server, browser, middleware)",
+        "Created DB schema: profiles, folders, articles with RLS + trigger",
+        "Created login page with Google OAuth sign-in",
+        "Created auth callback route handler",
+        "Updated Navbar with user avatar + logout",
+        "Updated layout to fetch user profile",
+        "Added Google avatar domain to next.config",
+        "Added login + navbar user CSS styles",
+        "Removed old static knowledge base plan folder"
+      ],
+      "commits": [
+        "06f0fc9 feat: Phase 01 - Supabase setup + auth foundation"
+      ],
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+      "decisions": [
+        "Supabase All-in-One (Auth + DB + RLS) for simplicity",
+        "Drizzle ORM with postgres driver (PgBouncer compatible)",
+        "Google OAuth only (no email/password)",
+        "Hard delete + confirmation dialog (no soft delete)",
+        "Slug auto-generated from title",
+        "Per-user data isolation via RLS policies",
+        "Next.js middleware for session refresh (deprecated but still working in 16.2)"
+      ],
+      "next_steps": [
+        "Phase 04-07: Complete fullstack migration"
+      ],
+      "open_questions": [
+        "Next.js 16 deprecates middleware → proxy. May need to migrate naming later.",
+        "Supabase free tier DB pauses after 1 week inactive — consider cron ping for production"
+      ]
+    },
+    {
+      "id": "handoff-20260522-160000",
+      "saved_at": "2026-05-22T16:00:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "fa62caa0671cd6f6d4f9308185a38794ef6ea762",
+      "base_sha": "1388541a2715fddc9b4e27251bf416d001c93e62",
+      "source": "commit",
+      "commit_range": "1388541..fa62caa",
+      "summary": "🎉 Fullstack migration COMPLETE — Phase 04-07: Data layer → Folder CRUD → Article CRUD + Editor → Dashboard polish + Onboarding",
+      "project_changes": [
+        "Phase 04: Extracted markdown.ts (pure functions), created DB queries (folders.ts, articles.ts), migrated all pages to Supabase, deleted knowledge.ts + docs/knowledge/",
+        "Phase 05: Folder CRUD — createFolder/renameFolder/deleteFolder server actions, FolderDialog (create/rename), DeleteConfirmDialog, sidebar hover actions",
+        "Phase 06: Article CRUD — createArticle/updateArticle/deleteArticle server actions, ArticleEditor with @uiw/react-md-editor split-pane, editor page, ArticleActions (edit/delete), Vietnamese slug generator",
+        "Phase 07: Demo data seeder (Getting Started folder + 2 articles), seed on first login, empty states (dashboard, folder, sidebar, knowledge page), dashboard CTA button",
+        "Fixed React 19 cascading setState error in FolderDialog (removed useEffect, use conditional rendering)",
+        "Fixed Supabase foreign key join type error (query folder slug separately)",
+        "Added shared UI types (src/lib/types.ts) to decouple components from data layer"
+      ],
+      "commits": [
+        "1388541 chore: save brain + migration plan (Phase 01-03 complete)",
+        "fa62caa feat: Phase 04-07 — Data layer migration, Folder/Article CRUD, Editor, Dashboard polish"
+      ],
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+      "decisions": [
+        "@uiw/react-md-editor for markdown editing (split-pane, dark theme, live preview)",
+        "Server actions for CRUD (not API routes) — simpler, type-safe",
+        "Vietnamese slug generator with NFD normalization + đ/Đ handling",
+        "Conditional rendering for dialogs (not isOpen prop) to avoid React 19 setState-in-effect error",
+        "Separate folder slug query instead of Supabase foreign key join (type compatibility)",
+        "Non-blocking seed in auth callback (catch errors silently)",
+        "revalidatePath('/', 'layout') for full sidebar refresh after mutations"
+      ],
+      "next_steps": [
+        "Test full CRUD flow: login → see demo data → create folder → create article → edit → delete",
+        "Deploy to Vercel when ready",
+        "Consider: image upload, article export, mobile responsive polish"
+      ],
+      "open_questions": [
+        "Next.js 16 middleware → proxy deprecation warning (still works, future migration needed)",
+        "Supabase free tier DB pauses after 1 week inactive",
+        "Lockfile swc patching warning on build (cosmetic, doesn't affect output)"
+      ]
+    },
+    {
+      "id": "handoff-20260601-135000",
+      "saved_at": "2026-06-01T13:50:00+07:00",
+      "branch": "feat/add-test",
+      "head_sha": "c4af474f3584696222d45387dc728379543039ff",
+      "base_sha": "fa62caa0671cd6f6d4f9308185a38794ef6ea762",
+      "source": "working_tree",
+      "commit_range": "fa62caa..c4af474 (no new commits, staged changes only)",
+      "summary": "Optimization plan complete (4 phases): Error handling/loading, Search performance, Editor auto-save, UX polish. All staged, not yet committed.",
+      "project_changes": [
+        "Phase 01: Added loading.tsx + error.tsx skeletons for root, knowledge, editor pages. Skeleton CSS shimmer animation",
+        "Phase 02: Created getSearchableArticles() lightweight query with React cache() — search no longer fetches full article content",
+        "Phase 03: ArticleEditor auto-save draft to localStorage every 5s, recovery banner on mount, draft cleared after DB save",
+        "Phase 04: Sidebar expand/collapse persisted via useSyncExternalStore + external store pattern. Dashboard shows real folder name from DB join",
+        "Bugfix: React 19 hydration mismatch — replaced useState(localStorage) with useSyncExternalStore + server snapshot",
+        "Bugfix: React 19 cascading render error — replaced useEffect+setState with proper subscribe/notify external store"
+      ],
+      "commits": [],
+      "working_tree": {
+        "status": "dirty",
+        "files": [
+          "src/app/globals.css (skeleton CSS)",
+          "src/app/loading.tsx (NEW)",
+          "src/app/error.tsx (NEW)",
+          "src/app/knowledge/loading.tsx (NEW)",
+          "src/app/knowledge/error.tsx (NEW)",
+          "src/app/knowledge/editor/loading.tsx (NEW)",
+          "src/app/knowledge/editor/error.tsx (NEW)",
+          "src/app/page.tsx (folderName instead of slug split)",
+          "src/components/AppShell.tsx (header hidden when unauthenticated)",
+          "src/components/ArticleEditor.tsx (auto-save draft + recovery)",
+          "src/components/Sidebar.tsx (useSyncExternalStore for expand state)",
+          "src/lib/db/queries/articles.ts (getSearchableArticles, folderName field)",
+          "src/lib/search.ts (uses getSearchableArticles)",
+          "src/lib/utils/draft.ts (NEW — localStorage helpers)",
+          "src/lib/utils/sidebar-state.ts (NEW — external store with subscribe)"
+        ]
+      },
+      "decisions": [
+        "useSyncExternalStore for localStorage-backed state (React 19 compatible — no hydration mismatch, no cascading render)",
+        "External store pattern with subscribe/notify for sidebar state (not useState+useEffect)",
+        "React cache() for getSearchableArticles to deduplicate within server request tree",
+        "Auto-save draft with 5s debounce + hasUserEdited guard to avoid saving on mount",
+        "folderName from DB join instead of splitting slug string"
+      ],
+      "next_steps": [
+        "Commit all staged optimization changes",
+        "Consider Part B: expand new features (tags page, article export, mobile responsive)",
+        "Deploy to Vercel when ready"
+      ],
+      "open_questions": [
+        "Supabase free tier DB pauses after 1 week inactive",
+        "Next.js 16 middleware → proxy deprecation warning (still works)"
+      ]
+    }
+  ]
+}
+
